@@ -18,16 +18,21 @@ public class NPCMove : TacticsMove {
         if (!turn)
             return;
 
-        if (!moving)
+        switch (state)
         {
-            FindNearestTarget();
-            CalculatePath();
-            FindSelectableTiles();
-            actualTargetTile.target = true;
-        }
-        else
-        {
-            Move();
+            case State.SelectingMoveTarget:
+                FindNearestTarget();
+                CalculatePath();
+                FindSelectableTiles();
+                actualTargetTile.target = true;
+                break;
+            case State.SelectingActionTarget:
+                TurnManager.EndTurn();
+                break;
+            case State.Moving:
+                Move();
+                break;
+
         }
     }
 

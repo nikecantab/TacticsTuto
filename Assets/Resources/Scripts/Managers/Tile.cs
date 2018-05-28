@@ -8,6 +8,8 @@ public class Tile : MonoBehaviour {
     public bool current = false;
     public bool target = false;
     public bool selectable = false;
+    public bool occupied = false;
+    public bool enemyOccupied = false;
 
     public List<Tile> adjacencyList = new List<Tile>();
 
@@ -45,7 +47,11 @@ public class Tile : MonoBehaviour {
         {
             GetComponent<Renderer>().material.color = Color.white;
         }
-	}
+        if (enemyOccupied)
+        {
+            GetComponent<Renderer>().material.color = Color.red;
+        }
+    }
 
     public void Reset()
     {
@@ -55,6 +61,8 @@ public class Tile : MonoBehaviour {
         current = false;
         target = false;
         selectable = false;
+        enemyOccupied = false;
+        occupied = false;
 
         adjacencyList = new List<Tile>();
 
@@ -87,14 +95,60 @@ public class Tile : MonoBehaviour {
             Tile tile = item.GetComponent<Tile>();
             if (tile != null && tile.walkable)
             {
-                RaycastHit hit;
+                adjacencyList.Add(tile);
 
-                //if empty
-                if (!Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1) || (tile == target))
-                {
-                    adjacencyList.Add(tile);
-                }
+                CheckOccupied(tile,target);
+                //CheckEnemyOccupied(tile);
 
+                //if empty -- checks if something is on top
+                //RaycastHit hit;
+                //if (!Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1) || (tile == target))
+                //{
+                //    adjacencyList.Add(tile);
+                    
+                //}
+
+            }
+        }
+    }
+
+    public void CheckOccupied(Tile tile, Tile target)
+    {
+        RaycastHit hit;
+        Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1);
+
+        if (Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1))
+        {
+            tile.occupied = true;
+        }
+    }
+
+    public TacticsMove GetOccupant()
+    {
+        RaycastHit hit;
+        Physics.Raycast(transform.position, Vector3.up, out hit, 1);
+        return hit.collider.gameObject.GetComponent<TacticsMove>();
+        //if ()
+        //{
+
+        //    if (hit.collider.gameObject.tag == "Entities")
+        //    {
+        //    }
+        //    else return null;
+        //}
+        //else return null;
+    }
+
+    public void CheckEnemyOccupied()
+    {
+        RaycastHit hit;
+        
+
+        if (Physics.Raycast(transform.position, Vector3.up, out hit, 1))
+        {
+            if (hit.collider.gameObject.tag != TurnManager.turnKey.Peek())
+            {
+                enemyOccupied = true;
             }
         }
     }

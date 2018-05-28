@@ -16,14 +16,21 @@ public class PlayerMove : TacticsMove {
         if (!turn)
             return;
 
-        if (!moving)
+        switch (state)
         {
-            FindSelectableTiles();
-            CheckMouse();
-        }
-        else
-        {
-            Move();
+            case State.SelectingMoveTarget:
+                FindSelectableTiles();
+                CheckMouse();
+                break;
+            case State.SelectingActionTarget:
+                FindAttackableTiles();
+                CheckMouse();
+                break;
+            case State.Moving:
+                Move();
+                break;
+
+
         }
 	}
 
@@ -36,16 +43,35 @@ public class PlayerMove : TacticsMove {
             ignoreEntities = ~ignoreEntities;
 
             RaycastHit hit;
-            if (Physics.Raycast(ray,out hit, Mathf.Infinity, ignoreEntities))
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, ignoreEntities))
             {
                 if (hit.collider.tag == "Tile")
                 {
                     Tile t = hit.collider.GetComponent<Tile>();
 
-                    if (t.selectable)
+                    //state 
+                    if (state == State.SelectingMoveTarget)
                     {
-                        MoveToTile(t);
+                        if (t.selectable)
+                        {
+                            MoveToTile(t);
+                        }
                     }
+                    else if (state == State.SelectingActionTarget)
+                    {
+                        if (t.enemyOccupied)
+                        {
+                            //Attack
+                            var enemy = t.GetOccupant();
+                            enemy.Energy -= Strength;
+
+                            TurnManager.EndTurn();
+                        }
+
+                        else if (t.current)
+                            TurnManager.EndTurn();
+                    }
+
                 }
             }
         }

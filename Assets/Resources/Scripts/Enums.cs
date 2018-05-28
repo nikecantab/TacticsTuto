@@ -6,3 +6,10 @@ public enum Facing
     DownLeft,
     UpLeft
 }
+
+public enum State
+{
+    SelectingMoveTarget,
+    Moving,
+    SelectingActionTarget
+}

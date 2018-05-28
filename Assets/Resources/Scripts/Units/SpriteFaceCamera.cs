@@ -5,7 +5,6 @@ using UnityEngine;
 public class SpriteFaceCamera : MonoBehaviour {
     public CameraDirection cameraDirection;
     private Animator animator;
-    private Vector2 prevTransform;
 
     //todo: add a way to change the editor's spriterenderer based on this?
     public Facing facing = Facing.UpRight;
@@ -16,7 +15,6 @@ public class SpriteFaceCamera : MonoBehaviour {
 	void Start ()
     {
         animator = GetComponent<Animator>();
-        prevTransform = new Vector2(transform.position.x, transform.position.z);
     }
 	
 	// Update is called once per frame
@@ -30,8 +28,7 @@ public class SpriteFaceCamera : MonoBehaviour {
 
         //Flipping the sprite doesn't currently work with the billboard renderer, using hand-flipped spritessheet instead
         animator.SetInteger("facing", (int)direction);
-
-        prevTransform = new Vector2(transform.position.x, transform.position.z);
+        
     }
 
     public void FaceDirection(Facing direction)

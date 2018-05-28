@@ -5,7 +5,7 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
     static Dictionary<string, List<TacticsMove>> units = new Dictionary<string, List<TacticsMove>>();
-    static Queue<string> turnKey = new Queue<string>();
+    public static Queue<string> turnKey = new Queue<string>();
     static Queue<TacticsMove> turnTeam = new Queue<TacticsMove>();
 
 	// Use this for initialization
@@ -88,4 +88,5 @@ public class TurnManager : MonoBehaviour
     }
 
     //void RemoveUnit()
+    //to do: defeated units are removed
 }

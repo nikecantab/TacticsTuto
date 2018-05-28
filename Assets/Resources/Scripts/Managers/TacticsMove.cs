@@ -12,9 +12,12 @@ public class TacticsMove : MonoBehaviour
     Stack<Tile> path = new Stack<Tile>();
     Tile currentTile;
 
-    public bool moving = false;
-    public int move = 5;
+    public State state = State.SelectingMoveTarget;
     public float moveSpeed = 2;
+
+    public int Energy = 5;
+    public int Strength = 1;
+    public int Range = 1;
 
     Vector3 velocity = new Vector3();
     Vector3 heading = new Vector3();
@@ -47,6 +50,7 @@ public class TacticsMove : MonoBehaviour
         RaycastHit hit;
         Tile tile = null;
 
+        //check the tile the target it standing on top of
         if (Physics.Raycast(target.transform.position, -Vector3.up, out hit, 1))
         {
             tile = hit.collider.GetComponent<Tile>();
@@ -58,6 +62,7 @@ public class TacticsMove : MonoBehaviour
     {
         foreach (GameObject tile in tiles)
         {
+            //have every tile check its neighbors
             Tile t = tile.GetComponent<Tile>();
             t.FindNeighbors(target);
         }
@@ -79,10 +84,10 @@ public class TacticsMove : MonoBehaviour
             Tile t = process.Dequeue();
 
             selectableTiles.Add(t);
-            if (t.current == false)
+            if (!t.occupied)
                 t.selectable = true;
 
-            if (t.distance < move)
+            if (t.distance < Energy)
             {
                 foreach (Tile tile in t.adjacencyList)
                 {
@@ -99,11 +104,47 @@ public class TacticsMove : MonoBehaviour
         }
     }
 
+    public void FindAttackableTiles()
+    {
+        ComputeAdjacencyList(null);
+        GetCurrentTile();
+
+        Queue<Tile> process = new Queue<Tile>();
+
+        process.Enqueue(currentTile);
+        currentTile.visited = true;
+        //currentTile.parent = null;
+
+        while (process.Count > 0)
+        {
+            Tile t = process.Dequeue();
+
+            selectableTiles.Add(t);
+
+            t.CheckEnemyOccupied();
+
+            if (t.distance < Range)
+            {
+                foreach (Tile tile in t.adjacencyList)
+                {
+                    if (!tile.visited)
+                    {
+                        tile.parent = t;
+                        tile.visited = true;
+                        tile.distance = 1 + t.distance;
+                        process.Enqueue(tile);
+                    }
+                }
+            }
+
+        }
+    }
+
     public void MoveToTile(Tile tile)
     {
         path.Clear();
         tile.target = true;
-        moving = true;
+        state = State.Moving;
 
         Tile next = tile;
         while (next != null)
@@ -132,7 +173,7 @@ public class TacticsMove : MonoBehaviour
                 transform.forward = heading;
                 transform.position += velocity * Time.deltaTime;
             }
-            else
+            else //DONE MOVING
             {
                 //tile center reached
                 transform.position = target;
@@ -141,10 +182,15 @@ public class TacticsMove : MonoBehaviour
         }
         else
         {
-            RemoveSelectedTiles();
-            moving = false;
+            //check if there are enemies
 
-            TurnManager.EndTurn();
+
+            RemoveSelectedTiles();
+            state = State.SelectingActionTarget;
+
+            //selection mode
+            //put endturn in the selection end function
+            //TurnManager.EndTurn();
         }
     }
 
@@ -221,13 +267,13 @@ public class TacticsMove : MonoBehaviour
             next = next.parent;
         }
 
-        if (tempPath.Count <= move)
+        if (tempPath.Count <= Energy)
         {
             return t.parent;
         }
 
         Tile endTile = null;
-        for(int i = 0; i <= move; i++)
+        for(int i = 0; i <= Energy; i++)
         {
             //trace back steps, then stop when you reach the maximum extent
             endTile = tempPath.Pop();
@@ -300,6 +346,7 @@ public class TacticsMove : MonoBehaviour
     public void BeginTurn()
     {
         turn = true;
+        state = State.SelectingMoveTarget;
     }
 
     public void EndTurn()
