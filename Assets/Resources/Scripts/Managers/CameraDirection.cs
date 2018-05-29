@@ -13,7 +13,7 @@ public class CameraDirection : MonoBehaviour
     public virtual void LateUpdate()
     {
         //float rY = transform.eulerAngles.y;
-        float y = Mathf.Abs(transform.eulerAngles.y);
+        float y = transform.eulerAngles.y;
 
         //Debug.Log(string.Format("facing:{0}", facing));
         //Debug.Log(string.Format("rX:{0} x: {1}", rY, y));

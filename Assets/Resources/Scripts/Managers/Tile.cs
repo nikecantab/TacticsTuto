@@ -10,6 +10,8 @@ public class Tile : MonoBehaviour {
     public bool selectable = false;
     public bool occupied = false;
     public bool enemyOccupied = false;
+    public bool inAttackRange = false;
+    public Vector2 gridCoord;
 
     public List<Tile> adjacencyList = new List<Tile>();
 
@@ -24,14 +26,21 @@ public class Tile : MonoBehaviour {
     public float h = 0;
 
     // Use this for initialization
-    void Start () {
-		
+    void Start ()
+    {
+        gridCoord = new Vector2(transform.localPosition.x, transform.parent.localPosition.z);
+        GridManager.AddTile(this, gridCoord);
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
-		if (current)
+        if (inAttackRange)
+        {
+            GetComponent<Renderer>().material.color = Color.red;
+        }
+
+        if (current)
         {
             GetComponent<Renderer>().material.color = Color.blue;
         }
@@ -47,6 +56,7 @@ public class Tile : MonoBehaviour {
         {
             GetComponent<Renderer>().material.color = Color.white;
         }
+
         if (enemyOccupied)
         {
             GetComponent<Renderer>().material.color = Color.red;
@@ -78,80 +88,44 @@ public class Tile : MonoBehaviour {
     {
         Reset();
 
-        CheckTile(Vector3.forward, target);
-        CheckTile(-Vector3.forward, target);
-        CheckTile(Vector3.right, target);
-        CheckTile(-Vector3.right, target);
+        CheckTile(Vector2.right, target);
+        CheckTile(-Vector2.right, target);
+        CheckTile(Vector2.up, target);
+        CheckTile(-Vector2.up, target);
 
     }
 
-    public void CheckTile(Vector3 direction, Tile target) 
+    public void CheckTile(Vector2 direction, Tile target) 
     {
-        Vector3 halfExtents = new Vector3(0.25f, (1) / 2.0f, 0.25f);
-        Collider[] colliders = Physics.OverlapBox(transform.position + direction, halfExtents);
+        Vector2 newCoord = gridCoord + direction;
+        if (newCoord.x < 0 || newCoord.x >= GridManager.gridSize || newCoord.y < 0 || newCoord.y >= GridManager.gridSize)
+            return;
+        Tile tile = GridManager.tilesGrid[(int)newCoord.x, (int)newCoord.y];
 
-        foreach(Collider item in colliders)
+        if (tile.walkable)
         {
-            Tile tile = item.GetComponent<Tile>();
-            if (tile != null && tile.walkable)
-            {
-                adjacencyList.Add(tile);
+            adjacencyList.Add(tile);
 
-                CheckOccupied(tile,target);
-                //CheckEnemyOccupied(tile);
-
-                //if empty -- checks if something is on top
-                //RaycastHit hit;
-                //if (!Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1) || (tile == target))
-                //{
-                //    adjacencyList.Add(tile);
-                    
-                //}
-
-            }
+            if (GridManager.CheckIfOccupied(newCoord))
+                tile.occupied = true;
         }
     }
-
-    public void CheckOccupied(Tile tile, Tile target)
+    
+    public Unit CheckEnemyOccupied()
     {
-        RaycastHit hit;
-        Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1);
-
-        if (Physics.Raycast(tile.transform.position, Vector3.up, out hit, 1))
+        Unit enemy = null;
+        if (GridManager.CheckIfOccupied(gridCoord))
         {
-            tile.occupied = true;
-        }
-    }
-
-    public TacticsMove GetOccupant()
-    {
-        RaycastHit hit;
-        Physics.Raycast(transform.position, Vector3.up, out hit, 1);
-        return hit.collider.gameObject.GetComponent<TacticsMove>();
-        //if ()
-        //{
-
-        //    if (hit.collider.gameObject.tag == "Entities")
-        //    {
-        //    }
-        //    else return null;
-        //}
-        //else return null;
-    }
-
-    public void CheckEnemyOccupied()
-    {
-        RaycastHit hit;
-        
-
-        if (Physics.Raycast(transform.position, Vector3.up, out hit, 1))
-        {
-            if (hit.collider.gameObject.tag != TurnManager.turnKey.Peek())
+            var occupant = GridManager.unitsGrid[(int)gridCoord.x, (int)gridCoord.y];
+            if (occupant.gameObject.tag != TurnManager.turnKey.Peek())
             {
                 enemyOccupied = true;
+                enemy = occupant;
             }
-        }
-    }
 
+        }
+        return enemy;
+    }
+    
 
 }

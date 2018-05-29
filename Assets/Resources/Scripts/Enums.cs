@@ -11,5 +11,6 @@ public enum State
 {
     SelectingMoveTarget,
     Moving,
-    SelectingActionTarget
+    SelectingActionTarget,
+    Attacking
 }

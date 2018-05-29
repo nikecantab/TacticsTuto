@@ -322,13 +322,14 @@
     <Compile Include="Assets\External\Standard Assets\Utility\WaypointProgressTracker.cs" />
     <Compile Include="Assets\Resources\Scripts\Enums.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\CameraDirection.cs" />
+    <Compile Include="Assets\Resources\Scripts\Managers\GridManager.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\TacticsCamera.cs" />
-    <Compile Include="Assets\Resources\Scripts\Managers\TacticsMove.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\Tile.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\TurnManager.cs" />
+    <Compile Include="Assets\Resources\Scripts\Managers\Unit.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\MenuScript.cs" />
-    <Compile Include="Assets\Resources\Scripts\Units\NPCMove.cs" />
-    <Compile Include="Assets\Resources\Scripts\Units\PlayerMove.cs" />
+    <Compile Include="Assets\Resources\Scripts\Units\NPC.cs" />
+    <Compile Include="Assets\Resources\Scripts\Units\Player.cs" />
     <Compile Include="Assets\Resources\Scripts\Units\SpriteFaceCamera.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TacticsMove : MonoBehaviour
+public class Unit : MonoBehaviour
 {
     public bool turn = false;
 
@@ -12,7 +12,10 @@ public class TacticsMove : MonoBehaviour
     Stack<Tile> path = new Stack<Tile>();
     Tile currentTile;
 
-    public State state = State.SelectingMoveTarget;
+    [SerializeField]
+    protected State state = State.SelectingMoveTarget;
+
+    public Vector2 gridCoord;
     public float moveSpeed = 2;
 
     public int Energy = 5;
@@ -28,13 +31,16 @@ public class TacticsMove : MonoBehaviour
     
     SpriteFaceCamera spriteFaceCamera;
 
+    protected Unit combatTarget;
+
     protected void Init()
     {
         tiles = GameObject.FindGameObjectsWithTag("Tile");
-
+        gridCoord = new Vector2(transform.localPosition.x, transform.localPosition.z);
         halfHeight = GetComponent<Collider>().bounds.extents.y;
 
         TurnManager.AddUnit(this);
+        GridManager.AddUnit(this, gridCoord);
 
         spriteFaceCamera = GetComponent<SpriteFaceCamera>();
     }
@@ -47,14 +53,8 @@ public class TacticsMove : MonoBehaviour
 
     public Tile GetTargetTile(GameObject target)
     {
-        RaycastHit hit;
         Tile tile = null;
-
-        //check the tile the target it standing on top of
-        if (Physics.Raycast(target.transform.position, -Vector3.up, out hit, 1))
-        {
-            tile = hit.collider.GetComponent<Tile>();
-        }
+        GridManager.GetTileAtCoord(new Vector2(target.transform.localPosition.x, target.transform.localPosition.z), out tile);
         return tile;
     }
 
@@ -150,6 +150,8 @@ public class TacticsMove : MonoBehaviour
         while (next != null)
         {
             path.Push(next);
+
+            //todo: check if parent is occupied, if it is, figure out a way around
             next = next.parent;
         }
     }
@@ -182,15 +184,9 @@ public class TacticsMove : MonoBehaviour
         }
         else
         {
-            //check if there are enemies
-
-
             RemoveSelectedTiles();
+            GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
             state = State.SelectingActionTarget;
-
-            //selection mode
-            //put endturn in the selection end function
-            //TurnManager.EndTurn();
         }
     }
 
@@ -199,6 +195,7 @@ public class TacticsMove : MonoBehaviour
         if (currentTile != null)
         {
             currentTile.current = false;
+            currentTile.target = false;
             currentTile = null;
         }
 
@@ -246,7 +243,7 @@ public class TacticsMove : MonoBehaviour
 
         foreach (Tile t in list)
         {
-            if (t.f < lowest.f)
+            if (t.f < lowest.f && !t.occupied)
             {
                 lowest = t;
             }
@@ -261,7 +258,7 @@ public class TacticsMove : MonoBehaviour
         Stack<Tile> tempPath = new Stack<Tile>();
 
         Tile next = t.parent;
-        while (next != null)
+        while (next != null && next.occupied == false)
         {
             tempPath.Push(next);
             next = next.parent;
@@ -346,11 +343,23 @@ public class TacticsMove : MonoBehaviour
     public void BeginTurn()
     {
         turn = true;
+        GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
         state = State.SelectingMoveTarget;
     }
 
     public void EndTurn()
     {
         turn = false;
+        GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
+    }
+
+    protected void CheckIfDead()
+    {
+        if (Energy < 1)
+        {
+            TurnManager.RemoveUnit(this);
+            GridManager.ResetOccupied(gridCoord);
+            Destroy(gameObject);
+        }
     }
 }

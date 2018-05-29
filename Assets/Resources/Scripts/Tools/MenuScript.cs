@@ -28,4 +28,10 @@ public class MenuScript
             t.AddComponent<Tile>();
         }
     }
+
+    [MenuItem("Tools/Assign Tile Script")]
+    public static void CreateGrid16x16()
+    {
+
+    }
 }

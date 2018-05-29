@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerMove : TacticsMove {
+public class Player : Unit {
 
 	// Use this for initialization
 	void Start ()
@@ -13,8 +13,12 @@ public class PlayerMove : TacticsMove {
 	// Update is called once per frame
 	void Update ()
     {
+        CheckIfDead();
         if (!turn)
             return;
+
+        if (state!=State.Moving)
+            GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
 
         switch (state)
         {
@@ -29,7 +33,10 @@ public class PlayerMove : TacticsMove {
             case State.Moving:
                 Move();
                 break;
-
+            case State.Attacking:
+                combatTarget.Energy -= Strength;
+                TurnManager.EndTurn();
+                break;
 
         }
 	}
@@ -52,7 +59,11 @@ public class PlayerMove : TacticsMove {
                     //state 
                     if (state == State.SelectingMoveTarget)
                     {
-                        if (t.selectable)
+                        if (t.current)
+                        {
+                            state = State.SelectingActionTarget;
+                        }
+                        else if (t.selectable)
                         {
                             MoveToTile(t);
                         }
@@ -62,12 +73,9 @@ public class PlayerMove : TacticsMove {
                         if (t.enemyOccupied)
                         {
                             //Attack
-                            var enemy = t.GetOccupant();
-                            enemy.Energy -= Strength;
-
-                            TurnManager.EndTurn();
+                            combatTarget = t.CheckEnemyOccupied();
+                            state = State.Attacking;
                         }
-
                         else if (t.current)
                             TurnManager.EndTurn();
                     }

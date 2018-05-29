@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NPCMove : TacticsMove {
+public class NPC : Unit {
 
     GameObject target;
 
@@ -15,6 +15,7 @@ public class NPCMove : TacticsMove {
 	// Update is called once per frame
 	void Update ()
     {
+        CheckIfDead();
         if (!turn)
             return;
 

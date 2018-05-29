@@ -4,12 +4,12 @@ using UnityEngine;
 
 public class TurnManager : MonoBehaviour
 {
-    static Dictionary<string, List<TacticsMove>> units = new Dictionary<string, List<TacticsMove>>();
+    static Dictionary<string, List<Unit>> units = new Dictionary<string, List<Unit>>();
     public static Queue<string> turnKey = new Queue<string>();
-    static Queue<TacticsMove> turnTeam = new Queue<TacticsMove>();
+    static Queue<Unit> turnTeam = new Queue<Unit>();
 
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start ()
     {
 		
 	}
@@ -25,9 +25,9 @@ public class TurnManager : MonoBehaviour
 
     static void InitTeamQueue()
     {
-        List<TacticsMove> teamList = units[turnKey.Peek()];
+        List<Unit> teamList = units[turnKey.Peek()];
 
-        foreach (TacticsMove unit in teamList)
+        foreach (Unit unit in teamList)
         {
             turnTeam.Enqueue(unit);
         }
@@ -45,7 +45,7 @@ public class TurnManager : MonoBehaviour
 
     public static void EndTurn()
     {
-        TacticsMove unit = turnTeam.Dequeue();
+        Unit unit = turnTeam.Dequeue();
         unit.EndTurn();
 
         //first unit of next team starts turn
@@ -63,15 +63,14 @@ public class TurnManager : MonoBehaviour
     }
 
     //Subscriber Pattern
-    public static void AddUnit(TacticsMove unit)
+    public static void AddUnit(Unit unit)
     {
-        List<TacticsMove> list;
-
+        List<Unit> list;
         //error prevention: has unit been added to dictionary?
         if (!units.ContainsKey(unit.tag))
         {
             //Add to dictionary
-            list = new List<TacticsMove>();
+            list = new List<Unit>();
             units[unit.tag] = list;
 
             if (!turnKey.Contains(unit.tag))
@@ -81,12 +80,27 @@ public class TurnManager : MonoBehaviour
         }
         else
         {
+            //get the list from the dictionary
             list = units[unit.tag];
         }
-
+        //add the unit to the list in the dictionary
         list.Add(unit); 
     }
 
-    //void RemoveUnit()
-    //to do: defeated units are removed
+    public static void RemoveUnit(Unit unit)
+    {
+        List<Unit> list;
+
+        list = units[unit.tag];
+
+        list.Remove(unit);
+
+        if (units[unit.tag].Count > 0)
+            units[unit.tag] = list;
+        else
+        {
+            //team wipe
+
+        }
+    }
 }
