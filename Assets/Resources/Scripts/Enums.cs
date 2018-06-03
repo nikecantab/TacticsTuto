@@ -14,3 +14,9 @@ public enum State
     SelectingActionTarget,
     Attacking
 }
+
+public enum UnitClass
+{
+    Warrior,
+    Hunter
+}

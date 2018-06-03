@@ -5,15 +5,15 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     public bool turn = false;
+    protected bool done = false;
 
     List<Tile> selectableTiles = new List<Tile>();
     GameObject[] tiles;
 
     Stack<Tile> path = new Stack<Tile>();
     Tile currentTile;
-
-    [SerializeField]
-    protected State state = State.SelectingMoveTarget;
+    
+    public State state = State.SelectingMoveTarget;
 
     public Vector2 gridCoord;
     public float moveSpeed = 2;
@@ -21,6 +21,8 @@ public class Unit : MonoBehaviour
     public int Energy = 5;
     public int Strength = 1;
     public int Range = 1;
+
+    public int remainingMove;
 
     Vector3 velocity = new Vector3();
     Vector3 heading = new Vector3();
@@ -36,13 +38,14 @@ public class Unit : MonoBehaviour
     protected void Init()
     {
         tiles = GameObject.FindGameObjectsWithTag("Tile");
-        gridCoord = new Vector2(transform.localPosition.x, transform.localPosition.z);
         halfHeight = GetComponent<Collider>().bounds.extents.y;
 
         TurnManager.AddUnit(this);
-        GridManager.AddUnit(this, gridCoord);
+        GridManager.AddUnit(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
 
         spriteFaceCamera = GetComponent<SpriteFaceCamera>();
+
+        remainingMove = Energy;
     }
 
     public void GetCurrentTile()
@@ -51,18 +54,21 @@ public class Unit : MonoBehaviour
         currentTile.current = true;
     }
 
+    //get coordinates of specific tile
     public Tile GetTargetTile(GameObject target)
     {
         Tile tile = null;
-        GridManager.GetTileAtCoord(new Vector2(target.transform.localPosition.x, target.transform.localPosition.z), out tile);
+        GridManager.GetTileBeneathUnit(target.GetComponent<Unit>(), out tile);
+        //GridManager.GetTileAtCoord(new Vector2(target.transform.localPosition.x, target.transform.parent.localPosition.z), out tile);
         return tile;
     }
+
 
     public void ComputeAdjacencyList(Tile target)
     {
         foreach (GameObject tile in tiles)
         {
-            //have every tile check its neighbors
+            //have every tile check its neighbors and add them to its adjacency list
             Tile t = tile.GetComponent<Tile>();
             t.FindNeighbors(target);
         }
@@ -75,7 +81,7 @@ public class Unit : MonoBehaviour
 
         Queue<Tile> process = new Queue<Tile>();
 
-        process.Enqueue(currentTile);
+        process.Enqueue(currentTile); //add first tile to queue
         currentTile.visited = true;
         //currentTile.parent = null;
 
@@ -84,10 +90,24 @@ public class Unit : MonoBehaviour
             Tile t = process.Dequeue();
 
             selectableTiles.Add(t);
-            if (!t.occupied)
-                t.selectable = true;
+            if (t.distance <= remainingMove)
+            {
+                if (!t.occupied)
+                    t.selectable = true;
+            }
+            else
+            {
+                t.inAttackRange = true;
+            }
 
-            if (t.distance < Energy)
+            if (t.occupied)
+            {
+                var enemy = t.CheckEnemyOccupied(t.gridCoord);
+                if (enemy != null)
+                    t.enemyOccupied = true;
+            }
+
+            if (t.distance < remainingMove + Range)
             {
                 foreach (Tile tile in t.adjacencyList)
                 {
@@ -102,44 +122,10 @@ public class Unit : MonoBehaviour
             }
             
         }
+        GridManager.UpdateTilesGrid();
     }
-
-    public void FindAttackableTiles()
-    {
-        ComputeAdjacencyList(null);
-        GetCurrentTile();
-
-        Queue<Tile> process = new Queue<Tile>();
-
-        process.Enqueue(currentTile);
-        currentTile.visited = true;
-        //currentTile.parent = null;
-
-        while (process.Count > 0)
-        {
-            Tile t = process.Dequeue();
-
-            selectableTiles.Add(t);
-
-            t.CheckEnemyOccupied();
-
-            if (t.distance < Range)
-            {
-                foreach (Tile tile in t.adjacencyList)
-                {
-                    if (!tile.visited)
-                    {
-                        tile.parent = t;
-                        tile.visited = true;
-                        tile.distance = 1 + t.distance;
-                        process.Enqueue(tile);
-                    }
-                }
-            }
-
-        }
-    }
-
+    
+    //change to a*
     public void MoveToTile(Tile tile)
     {
         path.Clear();
@@ -179,14 +165,18 @@ public class Unit : MonoBehaviour
             {
                 //tile center reached
                 transform.position = target;
+                GridManager.UpdateUnitPosition(this, new Vector2(t.transform.localPosition.x, t.transform.parent.localPosition.z));
                 path.Pop();
+                
+                remainingMove--;
             }
         }
         else
         {
             RemoveSelectedTiles();
-            GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
+            //Debug.Log("resetting tiles");
             state = State.SelectingActionTarget;
+            done = false;
         }
     }
 
@@ -194,14 +184,16 @@ public class Unit : MonoBehaviour
     {
         if (currentTile != null)
         {
-            currentTile.current = false;
-            currentTile.target = false;
+            //currentTile.current = false;
+            //currentTile.target = false;
+            currentTile.Reset();
             currentTile = null;
         }
 
-        foreach (Tile tile in selectableTiles)
+        foreach (GameObject tile in tiles)
         {
-            tile.Reset();
+            Tile t = tile.GetComponent<Tile>();
+            t.Reset();
         }
 
         selectableTiles.Clear();
@@ -264,13 +256,13 @@ public class Unit : MonoBehaviour
             next = next.parent;
         }
 
-        if (tempPath.Count <= Energy)
+        if (tempPath.Count < Energy)
         {
             return t.parent;
         }
 
         Tile endTile = null;
-        for(int i = 0; i <= Energy; i++)
+        for(int i = 0; i < Energy; i++)
         {
             //trace back steps, then stop when you reach the maximum extent
             endTile = tempPath.Pop();
@@ -296,7 +288,7 @@ public class Unit : MonoBehaviour
         while (openList.Count > 0)
         {
             Tile t = FindLowestF(openList);
-
+            //Debug.Log(string.Format("openlist tile coord: x{0} y{1}", t.gridCoord.x, t.gridCoord.y));
             closedList.Add(t);
 
             if (t == target)
@@ -343,6 +335,7 @@ public class Unit : MonoBehaviour
     public void BeginTurn()
     {
         turn = true;
+        remainingMove = Energy;
         GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
         state = State.SelectingMoveTarget;
     }
@@ -350,16 +343,26 @@ public class Unit : MonoBehaviour
     public void EndTurn()
     {
         turn = false;
+        done = false;
         GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
+        //Debug.Log(string.Format("Ended turn pos: x{0}, y{1}", transform.localPosition.x, transform.localPosition.z));
+        //Debug.Log(string.Format("Ended turn coord: x{0}, y{1}", gridCoord.x, gridCoord.y));
     }
 
-    protected void CheckIfDead()
+    protected bool CheckIfDead()
     {
         if (Energy < 1)
         {
             TurnManager.RemoveUnit(this);
             GridManager.ResetOccupied(gridCoord);
+            //EndTurn();
+            Tile tile;
+            GridManager.GetTileAtCoord(gridCoord, out tile);
+            tile.Reset();
+
             Destroy(gameObject);
+            return true;
         }
+        return false;
     }
 }

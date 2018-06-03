@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class NPC : Unit {
 
-    GameObject target;
+    GameObject targetUnit;
 
 	// Use this for initialization
 	void Start ()
@@ -15,7 +15,8 @@ public class NPC : Unit {
 	// Update is called once per frame
 	void Update ()
     {
-        CheckIfDead();
+        if (CheckIfDead())
+            return;
         if (!turn)
             return;
 
@@ -24,13 +25,25 @@ public class NPC : Unit {
             case State.SelectingMoveTarget:
                 FindNearestTarget();
                 CalculatePath();
-                FindSelectableTiles();
+                if (!done)
+                {
+                    FindSelectableTiles();
+                    done = true;
+                }
                 actualTargetTile.target = true;
                 break;
             case State.SelectingActionTarget:
                 TurnManager.EndTurn();
                 break;
+            case State.Attacking:
+                break;
             case State.Moving:
+                if (!done)
+                {
+                    GridManager.UpdateAll();
+                    done = true;
+                    remainingMove++; //cheat to correct the move countdown
+                }
                 Move();
                 break;
 
@@ -39,7 +52,10 @@ public class NPC : Unit {
 
     void CalculatePath()
     {
-        Tile targetTile = GetTargetTile(target);
+        Tile targetTile = GetTargetTile(targetUnit);//GetTargetTile(target);
+        //Debug.Log(string.Format("targetTile coords x:{0} y{1}", targetTile.gridCoord.x, targetTile.gridCoord.y));
+        //GridManager.GetTileBeneathUnit(targetUnit.GetComponent<Unit>(), out targetTile);
+        //GridManager.GetTileAtCoord(new Vector2((int)targetUnit.transform.localPosition.x, (int)targetUnit.transform.localPosition.z), out targetTile);
         FindPath(targetTile);
     }
 
@@ -61,6 +77,7 @@ public class NPC : Unit {
             }
         }
 
-        target = nearest;
+        targetUnit = nearest;
+        //Debug.Log(string.Format("target found: x{0} y{1}", targetUnit.GetComponent<Unit>().gridCoord.x, targetUnit.GetComponent<Unit>().gridCoord.y));
     }
 }

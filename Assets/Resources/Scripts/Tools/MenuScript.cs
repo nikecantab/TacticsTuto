@@ -29,9 +29,14 @@ public class MenuScript
         }
     }
 
-    [MenuItem("Tools/Assign Tile Script")]
+    [MenuItem("Tools/Create Grid 16x16")]
     public static void CreateGrid16x16()
     {
+        //Destroy all existing tiles
+        GameObject[] tiles = GameObject.FindGameObjectsWithTag("Tile");
 
+        //get dimension
+
+        //double loop - instantiate tile at offset
     }
 }

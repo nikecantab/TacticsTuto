@@ -9,8 +9,9 @@ public class Tile : MonoBehaviour {
     public bool target = false;
     public bool selectable = false;
     public bool occupied = false;
-    public bool enemyOccupied = false;
+    public bool enemyOccupied = false; //remove this var later
     public bool inAttackRange = false;
+    public bool highlighted = false;
     public Vector2 gridCoord;
 
     public List<Tile> adjacencyList = new List<Tile>();
@@ -35,6 +36,14 @@ public class Tile : MonoBehaviour {
 	// Update is called once per frame
 	void Update ()
     {
+        GetComponent<Renderer>().material.color = Color.white;
+
+
+        if (highlighted && (TurnManager.gameState == State.SelectingMoveTarget || TurnManager.gameState == State.SelectingMoveTarget))
+        {
+            GetComponent<Renderer>().material.color = Color.magenta; //remove later
+        }
+
         if (inAttackRange)
         {
             GetComponent<Renderer>().material.color = Color.red;
@@ -52,12 +61,8 @@ public class Tile : MonoBehaviour {
         {
             GetComponent<Renderer>().material.color = Color.green;
         }
-        else
-        {
-            GetComponent<Renderer>().material.color = Color.white;
-        }
 
-        if (enemyOccupied)
+        if (enemyOccupied && TurnManager.gameState==State.SelectingMoveTarget)
         {
             GetComponent<Renderer>().material.color = Color.red;
         }
@@ -73,10 +78,11 @@ public class Tile : MonoBehaviour {
         selectable = false;
         enemyOccupied = false;
         occupied = false;
+        inAttackRange = false;
 
         adjacencyList = new List<Tile>();
 
-        //needed bfs (breath first search)
+        //needed for bfs (breath first search)
         visited = false;
         parent = null;
         distance = 0;
@@ -104,22 +110,38 @@ public class Tile : MonoBehaviour {
 
         if (tile.walkable)
         {
-            adjacencyList.Add(tile);
-
+            //Perform all tile checks HERE, before adding to adjacency lit, to obstruct range
             if (GridManager.CheckIfOccupied(newCoord))
                 tile.occupied = true;
+
+            //var enemy = CheckEnemyOccupied(tile.gridCoord);
+
+            //if (enemy != null)
+            //    tile.enemyOccupied = true;
+
+
+            //Add to adjecency list
+            adjacencyList.Add(tile);
+            //if (tile.enemyOccupied && TurnManager.gameState == State.SelectingMoveTarget)
+            ////if (!tile.enemyOccupied)
+            //{
+            //    adjacencyList.Add(tile);
+            //    return;
+            //}
+            //if (target != null) //??
+            //    adjacencyList.Add(tile);
         }
     }
     
-    public Unit CheckEnemyOccupied()
+    public Unit CheckEnemyOccupied(Vector2 coordinates)
     {
         Unit enemy = null;
-        if (GridManager.CheckIfOccupied(gridCoord))
+        if (GridManager.CheckIfOccupied(coordinates))
         {
-            var occupant = GridManager.unitsGrid[(int)gridCoord.x, (int)gridCoord.y];
+            var occupant = GridManager.unitsGrid[(int)coordinates.x, (int)coordinates.y];
             if (occupant.gameObject.tag != TurnManager.turnKey.Peek())
             {
-                enemyOccupied = true;
+                //GridManager.GetTileAtCoord( enemyOccupied = true;
                 enemy = occupant;
             }
 

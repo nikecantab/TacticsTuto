@@ -13,27 +13,46 @@ public class Player : Unit {
 	// Update is called once per frame
 	void Update ()
     {
-        CheckIfDead();
+        if (CheckIfDead())
+            return;
         if (!turn)
             return;
-
-        if (state!=State.Moving)
-            GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
 
         switch (state)
         {
             case State.SelectingMoveTarget:
-                FindSelectableTiles();
+                if (!done)
+                {
+                    //FindAttackTiles();
+                    FindSelectableTiles();
+                    done = true;
+                }
                 CheckMouse();
                 break;
             case State.SelectingActionTarget:
-                FindAttackableTiles();
+                remainingMove = 0;
+                if (!done)
+                {
+                    //FindAttackTiles();
+                    FindSelectableTiles();
+                    done = true;
+                }
                 CheckMouse();
                 break;
             case State.Moving:
+                if (!done)
+                {
+                    GridManager.UpdateAll();
+                    done = true;
+                    remainingMove++; //cheat to correct the move countdown
+                }
                 Move();
                 break;
             case State.Attacking:
+                //if (!done)
+                //{
+                //    //start attacking
+                //}
                 combatTarget.Energy -= Strength;
                 TurnManager.EndTurn();
                 break;
@@ -62,10 +81,12 @@ public class Player : Unit {
                         if (t.current)
                         {
                             state = State.SelectingActionTarget;
+                            done = false;
                         }
                         else if (t.selectable)
                         {
                             MoveToTile(t);
+                            done = false;
                         }
                     }
                     else if (state == State.SelectingActionTarget)
@@ -73,8 +94,9 @@ public class Player : Unit {
                         if (t.enemyOccupied)
                         {
                             //Attack
-                            combatTarget = t.CheckEnemyOccupied();
+                            combatTarget = t.CheckEnemyOccupied(t.gridCoord);
                             state = State.Attacking;
+                            done = false;
                         }
                         else if (t.current)
                             TurnManager.EndTurn();
