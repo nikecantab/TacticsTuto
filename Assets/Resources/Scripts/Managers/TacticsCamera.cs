@@ -101,7 +101,7 @@ public class TacticsCamera : MonoBehaviour {
         }
         if (zooming)
         {
-            var cam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
+            var cam = Camera.main;
 
             cam.orthographicSize += 0.25f * zoomDirection * (Mathf.Abs(zoomSizes[currentZoomIndex] - zoomDestination));
             if (Mathf.Abs(cam.orthographicSize - zoomDestination) < 0.05f)

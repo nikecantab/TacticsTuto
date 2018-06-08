@@ -23,22 +23,22 @@ public class Player : Unit {
             case State.SelectingMoveTarget:
                 if (!done)
                 {
-                    //FindAttackTiles();
                     FindSelectableTiles();
                     done = true;
                 }
                 CheckMouse();
                 break;
+
             case State.SelectingActionTarget:
                 remainingMove = 0;
                 if (!done)
                 {
-                    //FindAttackTiles();
                     FindSelectableTiles();
                     done = true;
                 }
                 CheckMouse();
                 break;
+
             case State.Moving:
                 if (!done)
                 {
@@ -48,12 +48,13 @@ public class Player : Unit {
                 }
                 Move();
                 break;
+
             case State.Attacking:
                 //if (!done)
                 //{
                 //    //start attacking
                 //}
-                combatTarget.Energy -= Strength;
+                combatTarget.TakeDamage(Strength);
                 TurnManager.EndTurn();
                 break;
 

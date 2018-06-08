@@ -7,7 +7,7 @@ public class Unit : MonoBehaviour
     public bool turn = false;
     protected bool done = false;
 
-    List<Tile> selectableTiles = new List<Tile>();
+    //List<Tile> selectableTiles = new List<Tile>();
     GameObject[] tiles;
 
     Stack<Tile> path = new Stack<Tile>();
@@ -34,6 +34,9 @@ public class Unit : MonoBehaviour
     SpriteFaceCamera spriteFaceCamera;
 
     protected Unit combatTarget;
+    private GameObject floatingText;
+
+    public bool highlighted;
 
     protected void Init()
     {
@@ -46,6 +49,8 @@ public class Unit : MonoBehaviour
         spriteFaceCamera = GetComponent<SpriteFaceCamera>();
 
         remainingMove = Energy;
+
+        floatingText = Resources.Load("GUI/FloatingText") as GameObject;
     }
 
     public void GetCurrentTile()
@@ -89,28 +94,33 @@ public class Unit : MonoBehaviour
         {
             Tile t = process.Dequeue();
 
-            selectableTiles.Add(t);
+
+            var enemy = t.CheckEnemyOccupied(t.gridCoord);
+            if (enemy != null)
+                t.enemyOccupied = true;
+            //selectableTiles.Add(t);
+
             if (t.distance <= remainingMove)
             {
+                if (t.blocked)
+                    return;
+
                 if (!t.occupied)
                     t.selectable = true;
             }
             else
             {
+                if (t.blocked)
+                    return;
                 t.inAttackRange = true;
-            }
-
-            if (t.occupied)
-            {
-                var enemy = t.CheckEnemyOccupied(t.gridCoord);
-                if (enemy != null)
-                    t.enemyOccupied = true;
             }
 
             if (t.distance < remainingMove + Range)
             {
                 foreach (Tile tile in t.adjacencyList)
                 {
+                    if (t.blocked)
+                        return;
                     if (!tile.visited)
                     {
                         tile.parent = t;
@@ -120,7 +130,15 @@ public class Unit : MonoBehaviour
                     }
                 }
             }
-            
+
+            //double check 
+            if (t.occupied)
+            {
+                enemy = t.CheckEnemyOccupied(t.gridCoord);
+                if (enemy != null)
+                    t.enemyOccupied = true;
+            }
+
         }
         GridManager.UpdateTilesGrid();
     }
@@ -174,7 +192,7 @@ public class Unit : MonoBehaviour
         else
         {
             RemoveSelectedTiles();
-            //Debug.Log("resetting tiles");
+            Debug.Log("resetting tiles from " + gameObject.tag);
             state = State.SelectingActionTarget;
             done = false;
         }
@@ -196,7 +214,7 @@ public class Unit : MonoBehaviour
             t.Reset();
         }
 
-        selectableTiles.Clear();
+        //selectableTiles.Clear();
     }
 
     void CalculateHeading(Vector3 target)
@@ -338,6 +356,7 @@ public class Unit : MonoBehaviour
         remainingMove = Energy;
         GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
         state = State.SelectingMoveTarget;
+        Debug.Log("started turn: " + gameObject.tag);
     }
 
     public void EndTurn()
@@ -353,16 +372,29 @@ public class Unit : MonoBehaviour
     {
         if (Energy < 1)
         {
-            TurnManager.RemoveUnit(this);
             GridManager.ResetOccupied(gridCoord);
             //EndTurn();
             Tile tile;
             GridManager.GetTileAtCoord(gridCoord, out tile);
             tile.Reset();
 
-            Destroy(gameObject);
+            gameObject.SetActive(false);
             return true;
         }
         return false;
+    }
+
+    public void TakeDamage(int attackersSTR)
+    {
+        Energy -= attackersSTR;
+        ShowFloatingText(attackersSTR.ToString(), Color.red);
+    }
+
+    public void ShowFloatingText(string text, Color col)
+    {
+        var go = Instantiate(floatingText, transform.position, Quaternion.identity, transform);
+        var textMesh = go.GetComponent<TextMesh>();
+        textMesh.text = text;
+        textMesh.color = col;
     }
 }

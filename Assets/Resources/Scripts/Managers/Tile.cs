@@ -12,6 +12,7 @@ public class Tile : MonoBehaviour {
     public bool enemyOccupied = false; //remove this var later
     public bool inAttackRange = false;
     public bool highlighted = false;
+    public bool blocked = false;
     public Vector2 gridCoord;
 
     public List<Tile> adjacencyList = new List<Tile>();
@@ -31,7 +32,14 @@ public class Tile : MonoBehaviour {
     {
         gridCoord = new Vector2(transform.localPosition.x, transform.parent.localPosition.z);
         GridManager.AddTile(this, gridCoord);
-	}
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position, Vector3.up, out hit, 1))
+        {
+            if (hit.collider.gameObject.CompareTag("Inanimate"))
+                blocked = true;
+        }
+
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -108,9 +116,10 @@ public class Tile : MonoBehaviour {
             return;
         Tile tile = GridManager.tilesGrid[(int)newCoord.x, (int)newCoord.y];
 
+        if (tile.blocked)
+            return;
         if (tile.walkable)
         {
-            //Perform all tile checks HERE, before adding to adjacency lit, to obstruct range
             if (GridManager.CheckIfOccupied(newCoord))
                 tile.occupied = true;
 
@@ -120,6 +129,7 @@ public class Tile : MonoBehaviour {
             //    tile.enemyOccupied = true;
 
 
+            //Perform all tile checks HERE, before adding to adjacency lit, to obstruct range
             //Add to adjecency list
             adjacencyList.Add(tile);
             //if (tile.enemyOccupied && TurnManager.gameState == State.SelectingMoveTarget)

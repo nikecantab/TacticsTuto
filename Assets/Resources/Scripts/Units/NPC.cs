@@ -23,20 +23,21 @@ public class NPC : Unit {
         switch (state)
         {
             case State.SelectingMoveTarget:
+                FindSelectableTiles();
+
                 FindNearestTarget();
+
                 CalculatePath();
-                if (!done)
-                {
-                    FindSelectableTiles();
-                    done = true;
-                }
                 actualTargetTile.target = true;
                 break;
+
             case State.SelectingActionTarget:
                 TurnManager.EndTurn();
                 break;
+
             case State.Attacking:
                 break;
+
             case State.Moving:
                 if (!done)
                 {

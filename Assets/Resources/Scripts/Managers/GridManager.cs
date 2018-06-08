@@ -73,6 +73,8 @@ public static class GridManager
             {
                 if (unitsGrid[x, y] != null)
                 {
+                    if (tilesGrid[x, y].blocked)
+                        return;
                     tilesGrid[x, y].occupied = true;
                     tilesGrid[x, y].selectable = false;
                 }
@@ -107,7 +109,7 @@ public static class GridManager
 
             tilesGrid[unitX, unitY].occupied = true;
 
-            if (player.tag != TurnManager.turnKey.Peek() )
+            if (player.tag != TurnManager.turnKey.Peek())
             {
                 tilesGrid[unitX, unitY].enemyOccupied = true;
             }

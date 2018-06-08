@@ -321,11 +321,13 @@
     <Compile Include="Assets\External\Standard Assets\Utility\WaypointCircuit.cs" />
     <Compile Include="Assets\External\Standard Assets\Utility\WaypointProgressTracker.cs" />
     <Compile Include="Assets\Resources\Scripts\Enums.cs" />
+    <Compile Include="Assets\Resources\Scripts\GUI\FloatingText.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\CameraDirection.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\GridInspector.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\GridManager.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\TacticsCamera.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\Tile.cs" />
+    <Compile Include="Assets\Resources\Scripts\Managers\TileManager.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\TurnManager.cs" />
     <Compile Include="Assets\Resources\Scripts\Managers\Unit.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\MenuScript.cs" />

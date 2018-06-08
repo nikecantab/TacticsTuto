@@ -6,72 +6,57 @@ public class TurnManager : MonoBehaviour
 {
     static Dictionary<string, Queue<Unit>> units = new Dictionary<string, Queue<Unit>>();
     public static Queue<string> turnKey = new Queue<string>();
-    //static Queue<Unit> turnTeam = new Queue<Unit>();
     public static State gameState;
+    public State visibleGameState;
 
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         StartTurn();
-	}
-	
-	// Update is called once per frame
-	void Update ()
+    }
+
+    // Update is called once per frame
+    void Update()
     {
-        //if (turnTeam.Count == 0)
-        //      {
-        //          InitTeamQueue();
-        //      }
-        gameState = units[turnKey.Peek()].Peek().state;//turnTeam.Peek().state;
-        //Debug.Log("turnTeam: " + turnTeam.Count);
-	}
-
-    //static void InitTeamQueue()
-    //{
-    //    List<Unit> teamList = units[turnKey.Peek()];
-
-    //    foreach (Unit unit in teamList)
-    //    {
-    //        turnTeam.Enqueue(unit);
-    //    }
-
-    //    StartTurn();
-    //}
-
+        gameState = units[turnKey.Peek()].Peek().state;
+        visibleGameState = gameState;
+    }
     static void StartTurn()
     {
-        if (units[turnKey.Peek()].Peek() == null)
+        //check if team has been wiped
+        if (units[turnKey.Peek()].Count < 1)
+        {
+            Debug.Log("Game Over!");
+        }
+
+        //Check if unit has been killed
+        if (!units[turnKey.Peek()].Peek().gameObject.activeSelf)
+        {
+            Debug.Log("unit is null");
             units[turnKey.Peek()].Dequeue();
+        }
+
         units[turnKey.Peek()].Peek().BeginTurn();
-        //if (turnTeam.Count > 0)
-        //{
-        //    turnTeam.Peek().BeginTurn();
-        //}
+    }
+
+    public void EndTurnFromButton()
+    {
+        EndTurn();
     }
 
     public static void EndTurn()
     {
+        //cycle queue
         Unit unit = units[turnKey.Peek()].Dequeue();
         units[turnKey.Peek()].Enqueue(unit);
         unit.EndTurn();
 
         GridManager.UpdateAll();
 
+        //cycle teams
         string team = turnKey.Dequeue();
         turnKey.Enqueue(team);
         StartTurn();
-        //first unit of next team starts turn
-        //if (turnTeam.Count > 0)
-        //{
-        //    StartTurn();
-        //}
-        //else
-        //{
-        //    //Loop the team queue
-        //    string team = turnKey.Dequeue();
-        //    turnKey.Enqueue(team);
-        //    InitTeamQueue();
-        //}
     }
 
     //Subscriber Pattern
@@ -96,24 +81,6 @@ public class TurnManager : MonoBehaviour
             queue = units[unit.tag];
         }
         //add the unit to the list in the dictionary
-        queue.Enqueue(unit); 
-    }
-
-    public static void RemoveUnit(Unit unit)
-    {
-        
-        //Queue<Unit> queue;
-
-        //queue = units[unit.tag];
-        
-        //units[unit.tag] = queue;
-        //queue.(unit);
-
-        //if (queue.Count < 1)
-        //{
-        //    Debug.Log("Game Over!");
-        //}
-
-
+        queue.Enqueue(unit);
     }
 }
