@@ -20,6 +20,7 @@ public class Tile : MonoBehaviour {
     //needed bfs (breath first search)
     public bool visited = false;
     public Tile parent = null;
+    public Tile highlightParent = null;
     public int distance = 0;
 
     //For A*
@@ -28,7 +29,7 @@ public class Tile : MonoBehaviour {
     public float h = 0;
 
     // Use this for initialization
-    void Start ()
+    void Start()
     {
         gridCoord = new Vector2(transform.localPosition.x, transform.parent.localPosition.z);
         GridManager.AddTile(this, gridCoord);
@@ -38,11 +39,11 @@ public class Tile : MonoBehaviour {
             if (hit.collider.gameObject.CompareTag("Inanimate"))
                 blocked = true;
         }
-
+        FindNeighborsLite();
     }
-	
-	// Update is called once per frame
-	void Update ()
+
+    // Update is called once per frame
+    void Update()
     {
         GetComponent<Renderer>().material.color = Color.white;
 
@@ -70,7 +71,7 @@ public class Tile : MonoBehaviour {
             GetComponent<Renderer>().material.color = Color.green;
         }
 
-        if (enemyOccupied && TurnManager.gameState==State.SelectingMoveTarget)
+        if (enemyOccupied && TurnManager.gameState == State.SelectingMoveTarget)
         {
             GetComponent<Renderer>().material.color = Color.red;
         }
@@ -88,7 +89,7 @@ public class Tile : MonoBehaviour {
         occupied = false;
         inAttackRange = false;
 
-        adjacencyList = new List<Tile>();
+        //adjacencyList = new List<Tile>();
 
         //needed for bfs (breath first search)
         visited = false;
@@ -96,6 +97,21 @@ public class Tile : MonoBehaviour {
         distance = 0;
 
         f = g = h = 0;
+    }
+
+    public void ToggleHighlight()
+    {
+        highlighted = !highlighted;
+    }
+
+
+    public void FindNeighborsLite()
+    {
+        CheckTileLite(Vector2.right);
+        CheckTileLite(-Vector2.right);
+        CheckTileLite(Vector2.up);
+        CheckTileLite(-Vector2.up);
+
     }
 
     public void FindNeighbors(Tile target)
@@ -109,7 +125,7 @@ public class Tile : MonoBehaviour {
 
     }
 
-    public void CheckTile(Vector2 direction, Tile target) 
+    public void CheckTile(Vector2 direction, Tile target)
     {
         Vector2 newCoord = gridCoord + direction;
         if (newCoord.x < 0 || newCoord.x >= GridManager.gridSize || newCoord.y < 0 || newCoord.y >= GridManager.gridSize)
@@ -141,8 +157,24 @@ public class Tile : MonoBehaviour {
             //if (target != null) //??
             //    adjacencyList.Add(tile);
         }
+
     }
-    
+
+    public void CheckTileLite(Vector2 direction)
+    {
+        Vector2 newCoord = gridCoord + direction;
+        if (newCoord.x < 0 || newCoord.x >= GridManager.gridSize || newCoord.y < 0 || newCoord.y >= GridManager.gridSize)
+            return;
+        Tile tile = GridManager.tilesGrid[(int)newCoord.x, (int)newCoord.y];
+
+        if (tile == null)
+            return;
+        if (tile.blocked)
+            return;
+        if (!adjacencyList.Contains(tile))
+            adjacencyList.Add(tile);
+    }
+
     public Unit CheckEnemyOccupied(Vector2 coordinates)
     {
         Unit enemy = null;
@@ -158,6 +190,4 @@ public class Tile : MonoBehaviour {
         }
         return enemy;
     }
-    
-
 }

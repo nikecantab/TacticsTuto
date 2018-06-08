@@ -3,73 +3,73 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class TileManager : MonoBehaviour {
+    public bool highlighting = false;
+    GameObject[] tiles;
 
-    // public void FindSelectableTiles()
-    //{
-    //    ComputeAdjacencyList(null);
-    //    GetCurrentTile();
+    private void Awake()
+    {
+        tiles = GameObject.FindGameObjectsWithTag("Tile");
+    }
 
-    //    Queue<Tile> process = new Queue<Tile>();
+    public void ComputeAdjacencyList()
+    {
+        foreach (GameObject tile in tiles)
+        {
+            //have every tile check its neighbors and add them to its adjacency list
+            Tile t = tile.GetComponent<Tile>();
+            t.FindNeighborsLite();
+        }
+    }
+    public void HighlightTiles(Unit unit)
+    {
+        ComputeAdjacencyList();
 
-    //    process.Enqueue(currentTile); //add first tile to queue
-    //    currentTile.visited = true;
-    //    //currentTile.parent = null;
+        Queue<Tile> process = new Queue<Tile>();
 
-    //    while (process.Count > 0)
-    //    {
-    //        Tile t = process.Dequeue();
+        Tile currentTile;
+        GridManager.GetTileBeneathUnit(unit, out currentTile);
+        process.Enqueue(currentTile); //add first tile to queue
+        currentTile.visited = true;
+        //currentTile.parent = null;
 
+        while (process.Count > 0)
+        {
+            Tile t = process.Dequeue();
 
-    //        var enemy = t.CheckEnemyOccupied(t.gridCoord);
-    //        if (enemy != null)
-    //            t.enemyOccupied = true;
-    //        //selectableTiles.Add(t);
+            //selectableTiles.Add(t);
+            t.highlighted = true;
 
-    //        if (t.distance <= remainingMove)
-    //        {
-    //            if (t.blocked)
-    //                return;
+            if (t.distance <= unit.Energy + unit.Range)
+            {
+                foreach (Tile tile in t.adjacencyList)
+                {
+                    if (t.blocked)
+                        return;
 
-    //            if (!t.occupied)
-    //                t.selectable = true;
-    //        }
-    //        else
-    //        {
-    //            if (t.blocked)
-    //                return;
-    //            t.inAttackRange = true;
-    //        }
+                    tile.highlightParent = t;
+                    tile.visited = true;
+                    tile.distance = 1 + t.distance;
+                    process.Enqueue(tile);
+                }
+            }
 
-    //        if (t.distance < remainingMove + Range)
-    //        {
-    //            foreach (Tile tile in t.adjacencyList)
-    //            {
-    //                if (t.blocked)
-    //                    return;
-    //                if (!tile.visited)
-    //                {
-    //                    tile.parent = t;
-    //                    tile.visited = true;
-    //                    tile.distance = 1 + t.distance;
-    //                    process.Enqueue(tile);
-    //                }
-    //            }
-    //        }
-
-    //        //double check 
-    //        if (t.occupied)
-    //        {
-    //            enemy = t.CheckEnemyOccupied(t.gridCoord);
-    //            if (enemy != null)
-    //                t.enemyOccupied = true;
-    //        }
-
-    //    }
-    //    GridManager.UpdateTilesGrid();
-    //}
+        }
+        //GridManager.UpdateTilesGrid();
+    }
     
-	// Use this for initialization
-	void Start () {
+    public void ResetHighlight()
+    {
+        foreach(GameObject tile in tiles)
+        {
+            Tile t = tile.GetComponent<Tile>();
+            t.highlightParent = null;
+            t.highlighted = false;
+        }
+        highlighting = false;
+    }
+
+    // Use this for initialization
+    void Start () {
 		
 	}
 	

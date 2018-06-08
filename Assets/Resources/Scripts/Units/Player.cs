@@ -18,6 +18,9 @@ public class Player : Unit {
         if (!turn)
             return;
 
+        HighLight();
+        //if ()
+
         switch (state)
         {
             case State.SelectingMoveTarget:
@@ -60,6 +63,45 @@ public class Player : Unit {
 
         }
 	}
+
+    void HighLight()
+    {
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            var ignoreEntities = 1 << 8;
+            ignoreEntities = ~ignoreEntities;
+
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, ignoreEntities))
+            {
+                var go = GameObject.Find("GameManagers");
+                var manager = go.GetComponent<TileManager>();
+                if (hit.collider.tag == "Tile")
+                {
+                    Tile t = hit.collider.GetComponent<Tile>();
+                    if (t.occupied && t.gridCoord != gridCoord)
+                    {
+                        if (!manager.highlighting)
+                        {
+                            manager.highlighting = true;
+                            manager.HighlightTiles(GridManager.GetOccupant(t.gridCoord));
+                        }
+                        else
+                        {
+                            manager.ResetHighlight();
+                        }
+                    }
+
+                }
+                else
+                {
+                    manager.ResetHighlight();
+                }
+            }
+        }
+    }
 
     void CheckMouse()
     {
@@ -106,6 +148,7 @@ public class Player : Unit {
                 }
             }
         }
+
     }
 
 }

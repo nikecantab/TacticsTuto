@@ -40,6 +40,11 @@ public static class GridManager
         GetTileAtCoord(unit.gridCoord, out tile);
     }
 
+    public static Unit GetOccupant(Vector2 coordinates)
+    {
+        return unitsGrid[(int)coordinates.x, (int)coordinates.y];
+    }
+
     public static void ResetOccupied(Vector2 coordinates)
     {
         unitsGrid[(int)coordinates.x, (int)coordinates.y] = null;
