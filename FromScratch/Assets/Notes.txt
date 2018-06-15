@@ -1,0 +1,15 @@
+﻿playfield origin: bottom left
+	^
++y	|  +y
+-x	|  +x 
+--------->
+-x	|  +x
+-y	|  -y
+
+
+board order:
+players (down)left, enemies (up)right
+default player facing: up right
+default enemy facing: down left
+
+camera default: facing up right
