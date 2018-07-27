@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GridManager : MonoBehaviour {
-
+    [SerializeField]
     public int gridSize;
     public GameObject[,] greenTiles;
     public GameObject[,] redTiles;
@@ -20,7 +20,10 @@ public class GridManager : MonoBehaviour {
         GameObject[] go = GameObject.FindGameObjectsWithTag("GreenTile");
         foreach (GameObject t in go)
         {
-            greenTiles[(int)t.transform.parent.localPosition.x, (int)t.transform.parent.localPosition.z] = t;
+            var x = (int)t.transform.parent.localPosition.x;
+            var y = (int)t.transform.parent.localPosition.z;
+
+            greenTiles[x, y] = t;
         }
 
         go = GameObject.FindGameObjectsWithTag("RedTile");
@@ -28,18 +31,16 @@ public class GridManager : MonoBehaviour {
         {
             redTiles[(int)t.transform.parent.localPosition.x, (int)t.transform.parent.localPosition.z] = t;
         }
-        
-
-        DectivateAllTiles(greenTiles);
-        DectivateAllTiles(redTiles);
+        DeactivateAllTiles(greenTiles);
+        DeactivateAllTiles(redTiles);
     }
 
     void ActivateAllTiles(GameObject[,] grid)
     {
-        for (int row = 0; row < Mathf.Sqrt(grid.Length); row++)
+        for (int row = 0; row < gridSize; row++)
         {
             string print = "";
-            for (int col = 0; col < Mathf.Sqrt(grid.Length); col++)
+            for (int col = 0; col < gridSize; col++)
             {
                 ActivateTile(grid[row, col]);
                 print += string.Format(grid[row, col].name[0] + "|");
@@ -49,12 +50,12 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    public void DectivateAllTiles(GameObject[,] grid)
+    public void DeactivateAllTiles(GameObject[,] grid)
     {
-        for (int row = 0; row < Mathf.Sqrt(grid.Length); row++)
+        for (int row = 0; row < gridSize; row++)
         {
             string print = "";
-            for (int col = 0; col < Mathf.Sqrt(grid.Length); col++)
+            for (int col = 0; col <gridSize; col++)
             {
                 print += string.Format(grid[row, col].name[0] + "|");
                 DeactivateTile(grid[row, col]);
@@ -70,12 +71,11 @@ public class GridManager : MonoBehaviour {
         //get origin
         var origin = grid[start.x, start.y];
 
-        float[,] g = new float[(int)Mathf.Sqrt(grid.Length), (int)Mathf.Sqrt(grid.Length)];
+        float[,] g = new float[gridSize,gridSize];
         for (var x = 0; x < gridSize; x++)
         {
             for (var y = 0; y < gridSize; y++)
             {
-
                 g[x, y] = Mathf.Infinity;
             }
         }
@@ -92,25 +92,11 @@ public class GridManager : MonoBehaviour {
         {
             while (open.Count > 0)
             {
-                //foreach(var t in open.GetElements())
-                //{
-                //    Debug.Log(open.GetPriorities()[open.IndexOf(t)] + "|" + GetTilePosition(t).x + "," + GetTilePosition(t).y);
-                //}
-                //Debug.Log("min sorted: " + open.GetPriorityMin());
-
                 float currentTileG = open.GetPriorityMin();
                 var currentTile = open.GetElementPriorityMin();
                 open.Sort();
-                //Debug.Log("current: " + currentTileG + "|" + GetTilePosition(currentTile).x + "," + GetTilePosition(currentTile).y);
-                //Debug.Log("recheck: " + currentTileG + "|" + GetTilePosition(open.GetElementPriorityMin()).x + "," + GetTilePosition(open.GetElementPriorityMin()).y);
                 open.Remove(open.GetElementPriorityMin());
-
-
-
-                //foreach (var t in open.GetElements())
-                //{
-                //    Debug.Log("second check: " + open.GetPriorities()[open.IndexOf(t)] + "|" + GetTilePosition(t).x + "," + GetTilePosition(t).y);
-                //}
+                
 
                 closed.Add(currentTile);
 
@@ -127,8 +113,7 @@ public class GridManager : MonoBehaviour {
 
                     float tentativeG = currentTileG + 1; //can add terrain costs here
 
-
-                    //Debug.Log("neighbor: " + tentativeG + "|" + GetTilePosition(neighbor).x + "," + GetTilePosition(neighbor).y);
+                    
                     //attack tiles could be handled here
 
                     if (tentativeG > range)
@@ -163,6 +148,112 @@ public class GridManager : MonoBehaviour {
         }
     }
 
+    public void ActivateFrontierTiles(GameObject[,] referenceGrid, GameObject[,] attackGrid, int moveRange)//, int attackRange)
+    {
+        //if (attackRange < 1)
+        //    return;
+
+        List<GameObject> open = new List<GameObject>();
+        List<GameObject> closed = new List<GameObject>();
+        //Range 1
+        //check activated tiles
+        for (var x = 0; x < gridSize; x++)
+        {
+            for (var y = 0; y < gridSize; y++)
+            {
+                if (referenceGrid[x, y].activeSelf)
+                {
+                    closed.Add(referenceGrid[x, y]);
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var neighbor = GetNeighbor(referenceGrid, referenceGrid[x, y], i);
+                        if (neighbor == null)
+                            continue;
+                        var neighborPos = GetTilePosition(neighbor);
+                        if (neighborPos == null)
+                            continue;
+
+                        if (!neighbor.activeSelf && !attackGrid[neighborPos.x,neighborPos.y].activeSelf)
+                            open.Add(ActivateTile(attackGrid[neighborPos.x, neighborPos.y]));
+                    }
+                }
+            }
+        }
+        #region trash code
+        /*
+        //Range > 1 --- Currently don't need that, doesn't work for range > 2 yet
+        if (attackRange>1)
+        {
+            for (var r = 0; r < attackRange - 1; r++)
+            {
+                for (var x = 0; x < gridSize; x++)
+                {
+                    for (var y = 0; y < gridSize; y++)
+                    {
+                        if (closed.Contains(attackGrid[x, y]))
+                            continue;
+                        if (attackGrid[x, y].activeSelf && open.Contains(attackGrid[x, y]))
+                        {
+                            closed.Add(attackGrid[x, y]);
+                            open.Remove(attackGrid[x, y]);
+                            for (var i = 0; i < 4; i++)
+                            {
+                                var neighbor = GetNeighbor(attackGrid, attackGrid[x, y], i);
+                                if (neighbor == null)
+                                    continue;
+                                var neighborPos = GetTilePosition(neighbor);
+                                if (neighborPos == null)
+                                    continue;
+                                if (!neighbor.activeSelf && !referenceGrid[neighborPos.x, neighborPos.y].activeSelf && !closed.Contains(attackGrid[neighborPos.x, neighborPos.y]))
+                                {
+                                    ActivateTile(attackGrid[neighborPos.x, neighborPos.y]);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //foreach closed tile
+                foreach (var t in closed)
+                {
+                    if (open.Contains(t))
+                        continue;
+
+                    for (var i = 0; i < 4; i++)
+                    {
+                        var neighbor = GetNeighbor(attackGrid, attackGrid[GetTilePosition(t).x, GetTilePosition(t).y], i);
+                        if (neighbor == null)
+                            continue;
+
+                        var neighborPos = GetTilePosition(neighbor);
+                        if (neighborPos == null)
+                            continue;
+
+                        //if neighbor is empty
+                        if (!neighbor.activeSelf)
+                        {
+                            if (!referenceGrid[neighborPos.x, neighborPos.y].activeSelf)
+                            {
+                                //re add to open list
+                                open.Add(t);
+                                Debug.Log("added tile to open " + GetTilePosition(t).x + ", " + GetTilePosition(t).y);
+                            }
+                        }
+                            
+                    }
+                }
+
+                foreach (var t in open)
+                {
+                    if (closed.Contains(t))
+                        closed.Remove(t);
+                }
+            }
+        }*/
+        #endregion
+
+    }
+
     GameObject GetNeighbor(GameObject[,] grid, GameObject tile, int loop)
     {
         Vector2Int pos = GetTilePosition(tile);
@@ -190,19 +281,22 @@ public class GridManager : MonoBehaviour {
         }
     }
 
-    void ActivateTile(GameObject tile)
+    GameObject ActivateTile(GameObject tile)
     {
         tile.SetActive(true);
+        return tile;
     }
 
-    void DeactivateTile(GameObject tile)
+    GameObject DeactivateTile(GameObject tile)
     {
         tile.SetActive(false);
+        return tile;
     }
 
     Vector2Int GetTilePosition(GameObject tile)
     {
         return new Vector2Int((int)tile.transform.parent.localPosition.x, (int)tile.transform.parent.localPosition.z);
     }
+
     
 }

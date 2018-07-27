@@ -13,6 +13,7 @@ public class TacticsCamera : MonoBehaviour {
     [SerializeField]
     int[] zoomSizes = { 3, 7, 12 };
 
+    [SerializeField]
     int currentZoomIndex = 1;
 
     bool rotating;

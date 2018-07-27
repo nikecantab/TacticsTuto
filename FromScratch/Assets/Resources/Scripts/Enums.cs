@@ -7,12 +7,21 @@ public enum Facing
     UpLeft
 }
 
-public enum State
+public enum UnitState
 {
     SelectingMoveTarget,
     Moving,
     SelectingActionTarget,
-    Attacking
+    Attacking,
+    EndingPhase
+}
+
+public enum CursorState
+{
+    SelectingUnit,
+    SelectingDestination,
+    SelectingTarget,
+    Inactive
 }
 
 public enum UnitClass

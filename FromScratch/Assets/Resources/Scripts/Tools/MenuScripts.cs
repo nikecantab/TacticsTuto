@@ -7,6 +7,9 @@ public class MenuScript
 {
     public static void CreateGrid(int size)
     {
+        GameObject.Find("Managers").GetComponent<GridManager>().gridSize = size;
+
+        #region //Destroy Current
         GameObject grid = GameObject.Find("Grid");
 
         if (grid != null)
@@ -22,13 +25,18 @@ public class MenuScript
             }
             Object.DestroyImmediate(grid);
         }
+        #endregion
 
+        #region //Instantiate
         GameObject offset = GameObject.Find("Offset");
 
         grid = PrefabUtility.InstantiatePrefab(Resources.Load("Prefabs/Tiles/Grid") as GameObject) as GameObject;
         offset.transform.position = (Vector3.left * (size/2) + Vector3.up * 0.1f + Vector3.back * (size/2));
         grid.transform.parent = offset.transform;
         grid.transform.localPosition = Vector3.zero;
+        var collider = grid.GetComponent<BoxCollider>();
+        collider.center = new Vector3(size / 2 - 0.5f, -.5f, size / 2 - 0.5f);
+        collider.size = new Vector3(size, 1, size);
 
         for (var x = 0; x < size; x++)
         {
@@ -53,10 +61,8 @@ public class MenuScript
                 //redTile.SetActive(false);
             }
         }
+        #endregion
 
-
-        GameObject go = GameObject.Find("Managers");
-        go.GetComponent<GridManager>().gridSize = size;
     }
 
     [MenuItem("Tools/Create Grid/16x16")]
@@ -76,6 +82,7 @@ public class MenuScript
     {
         CreateGrid(32);
     }
+    
     //[MenuItem("Tools/Assign Tile Script")]
     //public static void AssignTileScript()
     //{

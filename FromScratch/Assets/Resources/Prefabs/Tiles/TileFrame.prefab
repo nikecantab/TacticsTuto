@@ -20,7 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4329675605345252}
   - component: {fileID: 212900077959073676}
-  - component: {fileID: 65240131152710734}
+  - component: {fileID: 114849722826579326}
   m_Layer: 10
   m_Name: TileFrame
   m_TagString: Untagged
@@ -41,18 +41,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
---- !u!65 &65240131152710734
-BoxCollider:
+--- !u!114 &114849722826579326
+MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1518430158508736}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1.0000002, z: 0.20000005}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bbf76214001674d8feb01c586bb61f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pos: {x: 0, y: 0}
+  greenActivatorParent: []
+  redActivatorParent: []
 --- !u!212 &212900077959073676
 SpriteRenderer:
   m_ObjectHideFlags: 1
