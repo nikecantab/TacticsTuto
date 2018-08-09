@@ -8,6 +8,7 @@ TagManager:
   - GreenTile
   - RedTile
   - PlayerUnit
+  - ActionPanel
   layers:
   - Default
   - TransparentFX

@@ -11,13 +11,20 @@ public class Unit : MonoBehaviour {
     public bool destroy = false;
     protected bool done = false;
 
+    public string Name = "Unit";
+
     public int Energy = 5;
     public int Strength = 1;
+    public int Constitution = 1;
     public int Range = 1;
-    
+
+    public int MEnergy;
+    public int MStrength;
+    public int MConstitution;
+
     public float moveSpeed = 2;
 
-    public UnitState state = UnitState.SelectingMoveTarget;
+    public UnitState state = UnitState.SelectingDestination;
     Vector3 velocity = new Vector3();
     Vector3 heading = new Vector3();
 
@@ -25,6 +32,10 @@ public class Unit : MonoBehaviour {
 
     SpriteFaceCamera spriteFaceCamera;
     TileManager tileManager;
+
+    public Unit combatTarget;
+    private GameObject floatingText;
+
     //GameObject[] tiles;
     //Tile currentTile;
     //public Vector2 gridCoord;
@@ -39,7 +50,11 @@ public class Unit : MonoBehaviour {
         
         spriteFaceCamera = GetComponent<SpriteFaceCamera>();
         // remainingMove = Energy;
-        //floatingText = Resources.Load("GUI/FloatingText") as GameObject;
+        floatingText = Resources.Load("Prefabs/GUI/FloatingText") as GameObject;
+
+        MEnergy = Energy;
+        MStrength = Strength;
+        MConstitution = Constitution;
     }
     
     /// MOVEMENT
@@ -107,7 +122,7 @@ public class Unit : MonoBehaviour {
         {
             //Debug.Log("done moving");
             //state = UnitState.SelectingActionTarget;
-            state = UnitState.SelectingActionTarget;
+            state = UnitState.AwaitingChoice;
         }
     }
 
@@ -135,7 +150,6 @@ public class Unit : MonoBehaviour {
         //Debug.Log(string.Format("Ended turn pos: x{0}, y{1}", transform.localPosition.x, transform.localPosition.z));
         //Debug.Log(string.Format("Ended turn coord: x{0}, y{1}", gridCoord.x, gridCoord.y));
     }
-
 
     public bool CheckIfDead() //should enemy check this?
     {
@@ -166,19 +180,18 @@ public class Unit : MonoBehaviour {
     {
         Destroy(gameObject, 0.1f);
     }
-
-    /* GOOD SHIT FOR LATER
-    public void TakeDamage(int attackersSTR)
+    
+    public void TakeEnergyDamage(int attackersSTR)
     {
         Energy -= attackersSTR;
-        ShowFloatingText(attackersSTR.ToString(), Color.red);
+        ShowFloatingText(attackersSTR.ToString(), Color.green);
     }
 
     public void ShowFloatingText(string text, Color col)
     {
         var go = Instantiate(floatingText, transform.position, Quaternion.identity, transform);
         var textMesh = go.GetComponent<TextMesh>();
-        textMesh.text = text;
+        textMesh.text = "-" + text;
         textMesh.color = col;
-    }*/
+    }
 } 

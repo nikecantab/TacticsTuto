@@ -65,14 +65,14 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1189056453282288}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: -5, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4243264877253582}
   m_Father: {fileID: 0}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!20 &20534530103235662
 Camera:
   m_ObjectHideFlags: 1
@@ -93,7 +93,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 7
+  orthographic size: 12
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -127,7 +127,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f3cecd0db995e54d8d044d945462250, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  facing: 1
+  facing: 0
 --- !u!114 &114921235442169642
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -142,7 +142,9 @@ MonoBehaviour:
   rotationAmount: 90
   rotSpeed: 1
   zoomSizes: 03000000070000000c00000012000000
-  mouseSensitivity: 0.01
+  currentZoomIndex: 2
+  zooming: 0
+  mouseSensitivity: 0.005
 --- !u!124 &124617580474508056
 Behaviour:
   m_ObjectHideFlags: 1

@@ -29,7 +29,7 @@ public class PlayableCharacter : Unit {
 
         switch (state)
         {
-            case UnitState.SelectingMoveTarget:
+            case UnitState.SelectingDestination:
                 animator.speed = 1;
                 //cursor.state = CursorState.SelectingUnit;
                 break;
@@ -38,19 +38,24 @@ public class PlayableCharacter : Unit {
                 cursor.state = CursorState.Inactive;
                 Move();
                 break;
-            case UnitState.SelectingActionTarget:
+            case UnitState.AwaitingChoice:
                 animator.speed = 1;
-                cursor.state = CursorState.SelectingTarget;
+                cursor.state = CursorState.AwaitingChoice;
+                break;
+            case UnitState.SelectingTarget:
+                animator.speed = 1;
                 break;
             case UnitState.Attacking:
-                //TODO: attacking
+                combatTarget.TakeEnergyDamage(Strength);
+                //TODO: add delay
                 state = UnitState.EndingPhase;
 
                 break;
             case UnitState.EndingPhase:
                 animator.speed = 1;
                 cursor.ResetCursor();
-                state = UnitState.SelectingMoveTarget;
+                combatTarget = null;
+                state = UnitState.SelectingDestination;
                 UpdatePosition();
                 done = false;
                 TempTurnManager.EndPhase();

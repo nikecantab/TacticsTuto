@@ -9,9 +9,10 @@ public enum Facing
 
 public enum UnitState
 {
-    SelectingMoveTarget,
+    SelectingDestination,
     Moving,
-    SelectingActionTarget,
+    AwaitingChoice,
+    SelectingTarget,
     Attacking,
     EndingPhase
 }
@@ -20,6 +21,7 @@ public enum CursorState
 {
     SelectingUnit,
     SelectingDestination,
+    AwaitingChoice,
     SelectingTarget,
     Inactive
 }
@@ -28,4 +30,13 @@ public enum UnitClass
 {
     Warrior,
     Hunter
+}
+
+public enum ActionButton
+{
+    Attack,
+    Wait,
+    Cripple,
+    Impair,
+    Weaken
 }

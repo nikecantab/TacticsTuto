@@ -11,10 +11,9 @@ public class TacticsCamera : MonoBehaviour {
     float rotSpeed = 1;
 
     [SerializeField]
-    int[] zoomSizes = { 3, 7, 12 };
-
-    [SerializeField]
-    int currentZoomIndex = 1;
+    int[] zoomSizes = { 3, 7, 12, 18 };
+    
+    public int currentZoomIndex = 1;
 
     bool rotating;
     int rotDirection;
@@ -22,7 +21,7 @@ public class TacticsCamera : MonoBehaviour {
     int rotCurrent;
     float r;
 
-    bool zooming;
+    public bool zooming;
     int zoomDirection;
     float zoomDestination;
 

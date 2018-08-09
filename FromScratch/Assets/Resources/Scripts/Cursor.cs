@@ -9,18 +9,34 @@ public class Cursor : MonoBehaviour {
     public Unit hoverUnit;
     public Unit selectedUnit;
     public CursorState state = CursorState.SelectingUnit;
+    public GameObject hoverStats;
+    public GameObject cornerStats;
 
     public int testRange;
-    //public int testAttack;
 
     Vector3 lastPos;
     bool canClick;
 
-	
-	// Update is called once per frame
-	void Update ()
+    Vector2Int savedPos;
+
+    GameObject actionPanel;
+    Object hoverActions;
+    
+
+    private void Start()
     {
-        switch(state)
+        cornerStats.SetActive(false);
+
+        hoverActions = Resources.Load("Prefabs/GUI/HoverActions", typeof(GameObject));
+    }
+
+    // Update is called once per frame
+    void Update ()
+    {
+        //this is the only way I could fix the hover panel remaining persistent when it shouldn't
+        HoverPanelOff();
+
+        switch (state)
         {
             case CursorState.SelectingUnit:
                 #region Selecting Unit
@@ -35,11 +51,15 @@ public class Cursor : MonoBehaviour {
                     gridManager.DeactivateAllTiles(gridManager.redTiles);
                     gridManager.ActivateAroundTile(gridManager.greenTiles, hoverUnit.Energy, hoverUnit.pos);
                     gridManager.ActivateFrontierTiles(gridManager.greenTiles, gridManager.redTiles, hoverUnit.Energy);
+
+                    ///HOVER STAT PANEL ON
+                    HoverPanelOn();
                 }
                 else
                 {
                     gridManager.DeactivateAllTiles(gridManager.greenTiles);
                     gridManager.DeactivateAllTiles(gridManager.redTiles);
+                    
                 }
 
                 ///UNIT SELECTION
@@ -52,6 +72,14 @@ public class Cursor : MonoBehaviour {
                         {
                             selectedUnit = hoverUnit;
                             state = CursorState.SelectingDestination;
+                            savedPos = selectedUnit.pos;
+
+                            ///HOVER STAT PANEL OFF
+                            HoverPanelOff();
+
+                            ///CORNER PANEL ON
+                            cornerStats.SetActive(true);
+                            cornerStats.GetComponent<StatPanelManager>().SetUnit(selectedUnit);
                         }
                     }
                 }
@@ -72,6 +100,12 @@ public class Cursor : MonoBehaviour {
                     gridManager.DeactivateAllTiles(gridManager.redTiles);
                     gridManager.ActivateAroundTile(gridManager.greenTiles, hoverUnit.Energy, hoverUnit.pos);
                     gridManager.ActivateFrontierTiles(gridManager.greenTiles, gridManager.redTiles, hoverUnit.Energy);
+
+                    if (hoverUnit != selectedUnit)
+                    {
+                        ///HOVER STAT PANEL ON
+                        HoverPanelOn();
+                    }
                 }
                 else if (selectedUnit != null)
                 //if a character is already selected, revert the range to them
@@ -80,6 +114,9 @@ public class Cursor : MonoBehaviour {
                     gridManager.DeactivateAllTiles(gridManager.redTiles);
                     gridManager.ActivateAroundTile(gridManager.greenTiles, selectedUnit.Energy, selectedUnit.pos);
                     gridManager.ActivateFrontierTiles(gridManager.greenTiles, gridManager.redTiles, selectedUnit.Energy);
+
+                    ///HOVER STAT PANEL OFF
+                    HoverPanelOff();
                 }
                 else
                 {
@@ -88,7 +125,7 @@ public class Cursor : MonoBehaviour {
                 }
 
 
-                ///UNIT SELECTION
+                ///UNIT MOVEMENT
                 if (Input.GetMouseButtonUp(0) && canClick)
                 {
                     //Move Unit
@@ -98,16 +135,23 @@ public class Cursor : MonoBehaviour {
                         if (gridManager.greenTiles[pos.x, pos.y].activeSelf && tileManager.GetUnit(pos) == null)
                         {
                             //Move
-                            var unit = selectedUnit;
-                            Stack<Vector2Int> path = FindPath(unit.pos, pos);
-                            unit.path = path;
-                            unit.state = UnitState.Moving;
-                            unit.pos = pos;
+                            Stack<Vector2Int> path = FindPath(selectedUnit.pos, pos);
+                            selectedUnit.path = path;
+                            selectedUnit.state = UnitState.Moving;
+                            selectedUnit.pos = pos;
+                        }
+                        else if (tileManager.GetUnit(pos) == selectedUnit)
+                        {
+                            //select own tile
+                            selectedUnit.state = UnitState.AwaitingChoice;
+
+                            ///HOVER STAT PANEL OFF
+                            HoverPanelOff();
                         }
                     }
                 }
                 //Cancel selection
-                else if (Input.GetMouseButtonUp(1) && canClick)
+                else if (Input.GetMouseButtonUp(1))
                 {
                     if (selectedUnit != null)
                     {
@@ -117,7 +161,63 @@ public class Cursor : MonoBehaviour {
                 }
 
                 break;
-                #endregion
+            #endregion
+            case CursorState.AwaitingChoice:
+                #region Awaiting Choice
+
+                //cancel
+                if (Input.GetMouseButtonUp(1))
+                {
+                    if (selectedUnit.state == UnitState.AwaitingChoice)
+                    {
+                        selectedUnit.pos = savedPos;
+                        selectedUnit.transform.localPosition = new Vector3(savedPos.x, selectedUnit.transform.localPosition.y, savedPos.y);
+                        selectedUnit.state = UnitState.SelectingDestination;
+                        state = CursorState.SelectingDestination;
+
+                        var panel = GameObject.FindGameObjectWithTag("ActionPanel");
+
+                        if (panel != null)
+                            panel.GetComponent<ActionPanelManager>().ClosePanel();
+                    }
+                    else if (selectedUnit.state == UnitState.SelectingTarget)
+                    {
+                        state = CursorState.SelectingTarget;
+                        var panel = GameObject.FindGameObjectWithTag("ActionPanel");
+
+                        if (panel != null)
+                            panel.GetComponent<ActionPanelManager>().ClosePanel();
+                    }
+                    return;
+                }
+
+                if (GameObject.FindGameObjectWithTag("ActionPanel") != null)
+                    return;
+                
+                ///ACTION PANEL ON
+                var actionPanel = Instantiate(hoverActions) as GameObject;
+                actionPanel.transform.SetParent(gameObject.transform.parent);
+                var actionManager = actionPanel.GetComponent<ActionPanelManager>();
+                Debug.Log("creating panel");
+                //panel 1
+                if (selectedUnit.state == UnitState.AwaitingChoice)
+                {
+                    Debug.Log("created action panel");
+                    actionManager.UpdatePosition(selectedUnit);
+                    actionManager.AddActionButton(ActionButton.Attack);
+                    actionManager.AddActionButton(ActionButton.Wait);
+                }
+                else //panel 2
+                {
+                    Debug.Log("created attack panel");
+                    actionManager.UpdatePosition(selectedUnit.combatTarget); //change to taget unit
+                    actionManager.AddActionButton(ActionButton.Cripple);
+                    actionManager.AddActionButton(ActionButton.Impair);
+                    actionManager.AddActionButton(ActionButton.Weaken);
+                }
+
+                break;
+            #endregion
             case CursorState.SelectingTarget:
                 #region Selecting Target
                 MoveCursor();
@@ -132,6 +232,17 @@ public class Cursor : MonoBehaviour {
                     gridManager.ActivateFrontierTiles(gridManager.greenTiles, gridManager.redTiles, selectedUnit.Energy);
                 }
 
+                if (hoverUnit != null && hoverUnit!=selectedUnit)
+                {
+                    ///HOVER STAT PANEL ON
+                    HoverPanelOn();
+                }
+                else
+                {
+                    ///HOVER PANEL OFF
+                    HoverPanelOff();
+                }
+
                 ///UNIT SELECTION
                 if (Input.GetMouseButtonUp(0) && canClick)
                 {
@@ -140,17 +251,24 @@ public class Cursor : MonoBehaviour {
                         if (gridManager.redTiles[pos.x, pos.y].activeSelf && tileManager.GetUnit(pos) != null)
                         {
                             //attacking
-                            selectedUnit.state = UnitState.Attacking;
+                            selectedUnit.combatTarget = hoverUnit;
+                            //selectedUnit.state = UnitState.Attacking;
+                            state = CursorState.AwaitingChoice;
+                            Debug.Log("cursor: awaiting choice");
+
+                            ///HOVER STAT PANEL OFF
+                            HoverPanelOff();
                         }
                     }
                 }
                 //Cancel selection
-                else if (Input.GetMouseButtonUp(1) && canClick)
+                else if (Input.GetMouseButtonUp(1))
                 {
                     if (selectedUnit != null)
                     {
                         //TODO: cancelling;
-                        selectedUnit.state = UnitState.Attacking;
+                        selectedUnit.state = UnitState.AwaitingChoice;
+                        state = CursorState.AwaitingChoice;
                     }
                 }
 
@@ -160,11 +278,29 @@ public class Cursor : MonoBehaviour {
                 #region Inactive
                 if (GetComponent<SpriteRenderer>().enabled)
                     GetComponent<SpriteRenderer>().enabled = false;
+                HoverPanelOff();
                 break;
                 #endregion
         }
 
 
+    }
+
+    void HoverPanelOn()
+    {
+        var hoverCanvas = hoverStats.GetComponent<Canvas>();
+        var hoverManager = hoverStats.GetComponent<StatPanelManager>();
+
+        hoverCanvas.enabled = true;
+        hoverManager.SetUnit(hoverUnit);
+        hoverManager.UpdatePosition(hoverUnit);
+
+    }
+
+    void HoverPanelOff()
+    {
+        var hoverCanvas = hoverStats.GetComponent<Canvas>();
+        hoverCanvas.enabled = false;
     }
 
     public void ResetCursor()
@@ -174,8 +310,7 @@ public class Cursor : MonoBehaviour {
         if (hoverUnit != null)
             selectedUnit = null;
     }
-
-    ///CURSOR POSITION
+    
     void MoveCursor()
     {
         if (!GetComponent<SpriteRenderer>().enabled)
@@ -191,7 +326,7 @@ public class Cursor : MonoBehaviour {
         //mouse is within grid
         {
             //transform.localPosition = new Vector3(hit.transform.localPosition.x, transform.localPosition.y, hit.transform.localPosition.z);
-
+            //Debug.Log(string.Format("mousex: {0}, mousey: {1}", hit.point.x, hit.point.z));
             pos.x = Mathf.FloorToInt(hit.point.x) - (int)transform.parent.position.x;
             pos.y = Mathf.FloorToInt(hit.point.z) - (int)transform.parent.position.z;
             pos.x = pos.x < 0 ? 0 : pos.x;
