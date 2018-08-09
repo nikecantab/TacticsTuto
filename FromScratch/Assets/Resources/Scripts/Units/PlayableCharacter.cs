@@ -46,7 +46,21 @@ public class PlayableCharacter : Unit {
                 animator.speed = 1;
                 break;
             case UnitState.Attacking:
-                combatTarget.TakeEnergyDamage(Strength);
+                switch(currentAttack)
+                {
+                    case AttackType.Cripple:
+
+                        combatTarget.TakeDamage(currentAttack, Strength);
+                        break;
+                    case AttackType.Impair:
+
+                        combatTarget.TakeDamage(currentAttack, Energy);
+                        break;
+                    case AttackType.Weaken:
+
+                        combatTarget.TakeDamage(currentAttack, Energy);
+                        break;
+                }
                 //TODO: add delay
                 state = UnitState.EndingPhase;
 

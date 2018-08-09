@@ -11,6 +11,7 @@ public class CrippleButton : MonoBehaviour {
         var cursor = GameObject.Find("GUICursor").GetComponent<Cursor>();
         cursor.state = CursorState.SelectingTarget;
         cursor.selectedUnit.state = UnitState.Attacking;
+        cursor.selectedUnit.currentAttack = AttackType.Cripple;
 
         actionPanelManager.ClosePanel();
     }

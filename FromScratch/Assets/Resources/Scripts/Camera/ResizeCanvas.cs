@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ResizeCanvas : MonoBehaviour
 {
-    public TacticsCamera camera;
+    public TacticsCamera cam;
     public Canvas canvas;
 
     [SerializeField]
@@ -21,8 +21,8 @@ public class ResizeCanvas : MonoBehaviour
 
     private void Awake()
     {
-        camera = GameObject.Find("TacticsCamera").GetComponent<TacticsCamera>();
-        currentSizeIndex = camera.currentZoomIndex;
+        cam = GameObject.Find("TacticsCamera").GetComponent<TacticsCamera>();
+        currentSizeIndex = cam.currentZoomIndex;
         canvasSize = canvasSizes[currentSizeIndex];
         var rect = gameObject.GetComponent<RectTransform>();
         rect.localScale = new Vector3(canvasSize, canvasSize, canvasSize);
@@ -32,7 +32,7 @@ public class ResizeCanvas : MonoBehaviour
     private void FixedUpdate()
     {
         //check zooming 
-        if (camera.zooming)
+        if (cam.zooming)
         {
             canvas.enabled = false;
         }
@@ -41,7 +41,7 @@ public class ResizeCanvas : MonoBehaviour
             if (!canvas.enabled)
             {
                 canvas.enabled = true;
-                currentSizeIndex = camera.currentZoomIndex;
+                currentSizeIndex = cam.currentZoomIndex;
             }
         }
 

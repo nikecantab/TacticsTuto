@@ -40,3 +40,10 @@ public enum ActionButton
     Impair,
     Weaken
 }
+
+public enum AttackType
+{
+    Cripple,
+    Impair,
+    Weaken
+}

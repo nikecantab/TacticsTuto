@@ -22,6 +22,10 @@ public class Unit : MonoBehaviour {
     public int MStrength;
     public int MConstitution;
 
+    public UnitClass unitClass;
+    public List<AttackType> attackTypes;
+    public AttackType currentAttack;
+
     public float moveSpeed = 2;
 
     public UnitState state = UnitState.SelectingDestination;
@@ -178,20 +182,82 @@ public class Unit : MonoBehaviour {
 
     public void Die()
     {
+        //turn this into a fade
         Destroy(gameObject, 0.1f);
     }
     
-    public void TakeEnergyDamage(int attackersSTR)
+    public void TakeDamage(AttackType type, int damagingStat)
     {
-        Energy -= attackersSTR;
-        ShowFloatingText(attackersSTR.ToString(), Color.green);
+        int damage; 
+        switch(type)
+        {
+            ///ENERGY DAMAGE
+            case AttackType.Cripple:
+                damage = damagingStat - Constitution; //=strength
+                if (damage < 0)
+                    damage = 0;
+                
+                if (damage == 0)
+                {
+                    ShowFloatingText("NO DAMAGE", Color.green);
+                }
+                else
+                {
+                    Energy -= damage;
+                    ShowFloatingText("-" + damage.ToString(), Color.green);
+                }
+
+                CheckIfDead();
+
+                break;
+            ///STRENGTH DAMAGE
+            case AttackType.Impair:
+                damage = damagingStat - Constitution; //=energy
+                //Debug.Log("Impair: " + Strength + "STR - DMG(" + Constitution + "CON - " + damagingStat)
+                if (damage < 0)
+                    damage = 0;
+
+                if (damage == 0 || Strength == 0)
+                {
+                    ShowFloatingText("NO DAMAGE", Color.red);
+                }
+                else
+                {
+                    Strength -= damage;
+                    if (Strength < 0)
+                        Strength = 0;
+                    ShowFloatingText("-" + damage.ToString(), Color.red);
+                }
+
+                break;
+
+            ///CONSTITUTION DAMAGE
+            case AttackType.Weaken:
+                damage = damagingStat - Strength; //=energy
+                if (damage < 0)
+                    damage = 0;
+
+                if (damage == 0 || Constitution == 0)
+                {
+                    ShowFloatingText("NO DAMAGE", Color.blue);
+                }
+                else
+                {
+                    Constitution -= damage;
+                    if (Constitution < 0)
+                        Constitution = 0;
+                    ShowFloatingText("-" + damage.ToString(), Color.blue);
+                }
+
+                break;
+        }
     }
 
     public void ShowFloatingText(string text, Color col)
     {
         var go = Instantiate(floatingText, transform.position, Quaternion.identity, transform);
         var textMesh = go.GetComponent<TextMesh>();
-        textMesh.text = "-" + text;
+        textMesh.text = text;
         textMesh.color = col;
     }
 } 

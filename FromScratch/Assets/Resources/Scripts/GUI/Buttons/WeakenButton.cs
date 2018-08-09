@@ -9,8 +9,9 @@ public class WeakenButton : MonoBehaviour {
     public void Weaken()
     {
         var cursor = GameObject.Find("GUICursor").GetComponent<Cursor>();
-        //cursor.state = CursorState.SelectingTarget;
-        cursor.selectedUnit.state = UnitState.EndingPhase;
+        cursor.state = CursorState.SelectingTarget;
+        cursor.selectedUnit.state = UnitState.Attacking;
+        cursor.selectedUnit.currentAttack = AttackType.Weaken;
 
         actionPanelManager.ClosePanel();
     }

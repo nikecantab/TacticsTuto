@@ -170,8 +170,8 @@ public class GridManager : MonoBehaviour {
                         if (neighbor == null)
                             continue;
                         var neighborPos = GetTilePosition(neighbor);
-                        if (neighborPos == null)
-                            continue;
+                        //if (neighborPos == null)
+                        //    continue;
 
                         if (!neighbor.activeSelf && !attackGrid[neighborPos.x,neighborPos.y].activeSelf)
                             open.Add(ActivateTile(attackGrid[neighborPos.x, neighborPos.y]));

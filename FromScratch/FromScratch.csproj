@@ -340,9 +340,9 @@
     <Compile Include="Assets\Resources\Scripts\GUI\Managers\TileManager.cs" />
     <Compile Include="Assets\Resources\Scripts\GUI\Managers\TurnManager.cs" />
     <Compile Include="Assets\Resources\Scripts\GUI\StatPanelManager.cs" />
+    <Compile Include="Assets\Resources\Scripts\GUI\TextHighlight.cs" />
     <Compile Include="Assets\Resources\Scripts\TileObject.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\ChangeGridOpacity.cs" />
-    <Compile Include="Assets\Resources\Scripts\Tools\MenuScripts.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\PriorityQueue.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\Utilities.cs" />
     <Compile Include="Assets\Resources\Scripts\Units\PlayableCharacter.cs" />
