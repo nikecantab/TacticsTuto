@@ -28,8 +28,9 @@ public enum CursorState
 
 public enum UnitClass
 {
+    Shieldmaiden,
     Warrior,
-    Hunter
+    Sentinel
 }
 
 public enum ActionButton

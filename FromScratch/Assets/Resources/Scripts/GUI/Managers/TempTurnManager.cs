@@ -40,9 +40,10 @@ public class TempTurnManager : MonoBehaviour {
     static void StartPhase()
     {
         currentUnit.BeginTurn();
+
         arrow.transform.localPosition = new Vector3(currentUnit.pos.x, arrow.transform.localPosition.y, currentUnit.pos.y);
 
-
+        //TODO: check if player. else: cursor inactive.
         var cursor = GameObject.Find("GUICursor").GetComponent<Cursor>();
         cursor.state = CursorState.SelectingUnit;
     }

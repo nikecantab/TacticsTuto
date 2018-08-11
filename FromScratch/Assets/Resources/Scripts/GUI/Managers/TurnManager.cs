@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// CURRENTLY UNUSED CLASS
+/// </summary>
+
+
 public class TurnManager : MonoBehaviour
 {
     public static Dictionary<string, List<Unit>> units;

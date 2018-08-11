@@ -44,6 +44,8 @@ public class PlayableCharacter : Unit {
                 break;
             case UnitState.SelectingTarget:
                 animator.speed = 1;
+                if (cursor.state == CursorState.AwaitingChoice)
+                    TurnToFace(combatTarget.pos);
                 break;
             case UnitState.Attacking:
                 switch(currentAttack)

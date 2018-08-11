@@ -182,7 +182,7 @@ public class Cursor : MonoBehaviour {
                     }
                     else if (selectedUnit.state == UnitState.SelectingTarget)
                     {
-                        state = CursorState.SelectingTarget;
+                        state = CursorState.SelectingTarget; //probably unnecessary
                         var panel = GameObject.FindGameObjectWithTag("ActionPanel");
 
                         if (panel != null)
@@ -198,22 +198,36 @@ public class Cursor : MonoBehaviour {
                 var actionPanel = Instantiate(hoverActions) as GameObject;
                 actionPanel.transform.SetParent(gameObject.transform.parent);
                 var actionManager = actionPanel.GetComponent<ActionPanelManager>();
-                Debug.Log("creating panel");
+                //Debug.Log("creating panel");
                 //panel 1
                 if (selectedUnit.state == UnitState.AwaitingChoice)
                 {
-                    Debug.Log("created action panel");
+                    //Debug.Log("created action panel");
                     actionManager.UpdatePosition(selectedUnit);
                     actionManager.AddActionButton(ActionButton.Attack);
                     actionManager.AddActionButton(ActionButton.Wait);
                 }
                 else //panel 2
                 {
-                    Debug.Log("created attack panel");
+                    //Debug.Log("created attack panel");
                     actionManager.UpdatePosition(selectedUnit.combatTarget); //change to taget unit
-                    actionManager.AddActionButton(ActionButton.Cripple);
-                    actionManager.AddActionButton(ActionButton.Impair);
-                    actionManager.AddActionButton(ActionButton.Weaken);
+
+                    //get possible attacks
+                    foreach(AttackType attack in selectedUnit.attackTypes)
+                    {
+                        switch (attack)
+                        {
+                            case AttackType.Cripple:
+                                actionManager.AddActionButton(ActionButton.Cripple);
+                                break;
+                            case AttackType.Impair:
+                                actionManager.AddActionButton(ActionButton.Impair);
+                                break;
+                            case AttackType.Weaken:
+                                actionManager.AddActionButton(ActionButton.Weaken);
+                                break;
+                        }
+                    }
                 }
 
                 break;

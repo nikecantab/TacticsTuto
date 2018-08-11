@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_Name: PSMIdle
+  m_Controller: {fileID: 9100000, guid: 3500b947a2da783449371c7f818a6fc0, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: da6a27b15868b1548ac728e85858be1f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 88082179eb6b9dd489de08774a0780ed, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 582baa27ad21f7446b697665dd3ead2f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: df8df2ba70559ca4f93e58bf41b3e82b, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 0f0a9ae5a9a2e194bb9eac18064b32c1, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 19fa746e2818be041bd1dc38ccffd1b7, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: c178167749d152d41ac7b6cacbdfcec5, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 9edd01943aa86af489a990d6853c3dc8, type: 2}

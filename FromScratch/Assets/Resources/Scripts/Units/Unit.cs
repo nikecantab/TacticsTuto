@@ -93,6 +93,33 @@ public class Unit : MonoBehaviour {
         velocity = heading * moveSpeed;
     }
 
+    protected void TurnToFace(Vector2Int target)
+    {
+        var direction = target - pos;
+        heading.Normalize();
+        //Debug.Log("heading: " + heading.x + "," + heading.y + "," + heading.z);
+
+
+        //figure out new direction 
+        if (direction.y > 0)
+        {
+            spriteFaceCamera.FaceDirection(Facing.UpLeft);
+        }
+        else if (direction.x > 0)
+        {
+            spriteFaceCamera.FaceDirection(Facing.UpRight);
+        }
+        else if (direction.y < 0)
+        {
+            spriteFaceCamera.FaceDirection(Facing.DownRight);
+        }
+        else
+        {
+            spriteFaceCamera.FaceDirection(Facing.DownLeft);
+        }
+
+    }
+
     public void Move()
     {
         if (path.Count > 0)
