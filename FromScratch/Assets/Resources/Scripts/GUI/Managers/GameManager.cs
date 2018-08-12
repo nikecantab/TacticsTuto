@@ -9,11 +9,34 @@ public class GameManager : MonoBehaviour {
     public GameObject exitPrefab;
     GameObject exitInstance;
 
+    [SerializeField]
+    GameObject gameCanvas;
+    [SerializeField]
+    GameObject tutorialCanvas;
+    [SerializeField]
+    GameObject winCanvas;
+    [SerializeField]
+    GameObject loseCanvas;
+
+    [SerializeField]
+    Cursor cursor;
+
+    public bool win = false;
+    public bool loss = false;
+
     int counter = 0;
 
 	// Use this for initialization
 	void Awake () {
         Application.targetFrameRate = 60;
+
+        if (SceneManager.GetActiveScene().buildIndex != 0)
+        {
+            gameCanvas.SetActive(false);
+            tutorialCanvas.SetActive(true);
+            winCanvas.SetActive(false);
+            loseCanvas.SetActive(false);
+        }
 	}
 
     private void Update()
@@ -48,6 +71,25 @@ public class GameManager : MonoBehaviour {
             }
             counter = 0;
         }
+
+        if (win)
+        {
+            if (winCanvas.activeSelf == false)
+            {
+                winCanvas.SetActive(true);
+                gameCanvas.SetActive(false);
+            }
+            cursor.state = CursorState.Inactive;
+        }
+        else if (loss)
+        {
+            if (loseCanvas.activeSelf == false)
+            {
+                loseCanvas.SetActive(true);
+                gameCanvas.SetActive(false);
+            }
+            cursor.state = CursorState.Inactive;
+        }
     }
 
     public void NextScene()
@@ -59,5 +101,48 @@ public class GameManager : MonoBehaviour {
     {
         Debug.Log("exit");
         Application.Quit();
+    }
+
+    public void StartMatch()
+    {
+        tutorialCanvas.SetActive(false);
+        gameCanvas.SetActive(true);
+        TempTurnManager.StartTurn();
+    }
+
+    public void BackToTitle()
+    {
+        SceneManager.LoadScene(0);
+    }
+
+    public void CheckWinLose()
+    {
+        StartCoroutine(CheckLater());
+    }
+
+    IEnumerator CheckLater()
+    {
+        yield return new WaitForSeconds(1.2f);
+        GameObject[] players = GameObject.FindGameObjectsWithTag("PlayerUnit");
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("EnemyUnit");
+
+        Debug.Log("players: " + players.Length + "  enemies: " + enemies.Length);
+
+        if (players.Length == 0)
+        {
+            loss = true;
+
+            foreach (GameObject enemy in enemies)
+            {
+                enemy.GetComponent<Unit>().turn = false;
+            }
+
+            yield break;
+        }
+        else if (enemies.Length == 0)
+        {
+            win = true;
+            yield break;
+        }
     }
 }

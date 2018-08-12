@@ -14,10 +14,10 @@ public class TempTurnManager : MonoBehaviour {
 	void Start ()
     {
         arrow = getArrow;
-        StartTurn();
+        //StartTurn();
 	}
 
-    static void StartTurn()
+    public static void StartTurn()
     {
         currentUnit = units[0];
         StartPhase();
@@ -42,10 +42,9 @@ public class TempTurnManager : MonoBehaviour {
         currentUnit.BeginTurn();
 
         arrow.transform.localPosition = new Vector3(currentUnit.pos.x, arrow.transform.localPosition.y, currentUnit.pos.y);
-
-        //TODO: check if player. else: cursor inactive.
+        
         var cursor = GameObject.Find("GUICursor").GetComponent<Cursor>();
-        cursor.state = CursorState.SelectingUnit;
+        cursor.state = currentUnit.tag == "PlayerUnit" ? CursorState.SelectingUnit : CursorState.Inactive;
     }
 
     public static void EndPhase()
@@ -68,11 +67,10 @@ public class TempTurnManager : MonoBehaviour {
                 units.Remove(unit);
             else
             {
-                Debug.Log("error: trying to remove an active unit");
+                Debug.Log("turn manager error: trying to remove an active unit");
                 NextPhase();
             }
             unit.Die();
         }
     }
-    
 }

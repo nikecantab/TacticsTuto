@@ -9,6 +9,7 @@ TagManager:
   - RedTile
   - PlayerUnit
   - ActionPanel
+  - EnemyUnit
   layers:
   - Default
   - TransparentFX

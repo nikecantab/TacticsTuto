@@ -268,7 +268,7 @@ public class Cursor : MonoBehaviour {
                             selectedUnit.combatTarget = hoverUnit;
                             //selectedUnit.state = UnitState.Attacking;
                             state = CursorState.AwaitingChoice;
-                            Debug.Log("cursor: awaiting choice");
+                            //Debug.Log("cursor: awaiting choice");
 
                             ///HOVER STAT PANEL OFF
                             HoverPanelOff();
@@ -290,6 +290,9 @@ public class Cursor : MonoBehaviour {
             #endregion
             case CursorState.Inactive:
                 #region Inactive
+                gridManager.DeactivateAllTiles(gridManager.greenTiles);
+                gridManager.DeactivateAllTiles(gridManager.redTiles);
+
                 if (GetComponent<SpriteRenderer>().enabled)
                     GetComponent<SpriteRenderer>().enabled = false;
                 HoverPanelOff();

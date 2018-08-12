@@ -5,13 +5,13 @@ using UnityEngine;
 public class PlayableCharacter : Unit {
 
     Cursor cursor;
-    Animator animator;
+    //Animator animator;
 
 	// Use this for initialization
 	void Start () {
         Init();
         cursor = GameObject.Find("GUICursor").GetComponent<Cursor>();
-        animator = GetComponent<Animator>();
+        //animator = GetComponent<Animator>();
 	}
 	
 	// Update is called once per frame
@@ -30,20 +30,20 @@ public class PlayableCharacter : Unit {
         switch (state)
         {
             case UnitState.SelectingDestination:
-                animator.speed = 1;
+                //animator.speed = 1;
                 //cursor.state = CursorState.SelectingUnit;
                 break;
             case UnitState.Moving:
-                animator.speed = 2;
+                //animator.speed = 2;
                 cursor.state = CursorState.Inactive;
                 Move();
                 break;
             case UnitState.AwaitingChoice:
-                animator.speed = 1;
+                //animator.speed = 1;
                 cursor.state = CursorState.AwaitingChoice;
                 break;
             case UnitState.SelectingTarget:
-                animator.speed = 1;
+                //animator.speed = 1;
                 if (cursor.state == CursorState.AwaitingChoice)
                     TurnToFace(combatTarget.pos);
                 break;
@@ -68,7 +68,7 @@ public class PlayableCharacter : Unit {
 
                 break;
             case UnitState.EndingPhase:
-                animator.speed = 1;
+                //animator.speed = 1;
                 cursor.ResetCursor();
                 combatTarget = null;
                 state = UnitState.SelectingDestination;

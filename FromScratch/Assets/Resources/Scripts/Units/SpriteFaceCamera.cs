@@ -15,6 +15,7 @@ public class SpriteFaceCamera : MonoBehaviour {
 	void Start ()
     {
         animator = GetComponent<Animator>();
+        cameraDirection = GameObject.Find("TacticsCamera").GetComponent<CameraDirection>();
     }
 	
 	// Update is called once per frame

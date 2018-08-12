@@ -345,6 +345,7 @@
     <Compile Include="Assets\Resources\Scripts\Tools\ChangeGridOpacity.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\PriorityQueue.cs" />
     <Compile Include="Assets\Resources\Scripts\Tools\Utilities.cs" />
+    <Compile Include="Assets\Resources\Scripts\Units\EnemyNPC.cs" />
     <Compile Include="Assets\Resources\Scripts\Units\PlayableCharacter.cs" />
     <Compile Include="Assets\Resources\Scripts\Units\SpriteFaceCamera.cs" />
     <Compile Include="Assets\Resources\Scripts\Units\Unit.cs" />

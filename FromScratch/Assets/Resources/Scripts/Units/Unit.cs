@@ -9,7 +9,7 @@ public class Unit : MonoBehaviour {
 
     public bool turn = false;
     public bool destroy = false;
-    protected bool done = false;
+    public bool done = false;
 
     public string Name = "Unit";
 
@@ -170,7 +170,7 @@ public class Unit : MonoBehaviour {
         //remainingMove = Energy;
         //GridManager.UpdateUnitPosition(this, new Vector2(transform.localPosition.x, transform.localPosition.z));
         //state = State.SelectingMoveTarget;
-        Debug.Log("started turn: " + gameObject.tag);
+        //Debug.Log("started turn: " + gameObject.tag);
     }
 
     public void EndTurn()
@@ -209,8 +209,9 @@ public class Unit : MonoBehaviour {
 
     public void Die()
     {
-        //turn this into a fade
+        //TODO: turn this into a fade
         Destroy(gameObject, 0.1f);
+        GameObject.Find("Managers").GetComponent<GameManager>().CheckWinLose();
     }
     
     public void TakeDamage(AttackType type, int damagingStat)
@@ -244,7 +245,7 @@ public class Unit : MonoBehaviour {
                 if (damage < 0)
                     damage = 0;
 
-                if (damage == 0 || Strength == 0)
+                if (damage == 0 || Strength == 1)
                 {
                     ShowFloatingText("NO DAMAGE", Color.red);
                 }
@@ -286,5 +287,166 @@ public class Unit : MonoBehaviour {
         var textMesh = go.GetComponent<TextMesh>();
         textMesh.text = text;
         textMesh.color = col;
+    }
+
+
+    protected Vector2Int FindNearestValidTagetTile()
+    {
+        var invalidPos = new Vector2Int(-1, -1);
+
+        GameObject[] targetObjects = GameObject.FindGameObjectsWithTag("PlayerUnit");
+        if (targetObjects.Length == 0)
+        {
+            state = UnitState.EndingPhase;
+        }
+        List<Unit> playerUnits = new List<Unit>();
+        foreach (GameObject target in targetObjects)
+        {
+            playerUnits.Add(target.GetComponent<Unit>());
+        }
+
+        List<Vector2Int> open = new List<Vector2Int>();
+        List<Vector2Int> closed = new List<Vector2Int>();
+        List<Vector2Int> unoccupiedTiles = new List<Vector2Int>();
+
+
+        ///GET ALL ADJACENT TILES
+        foreach (Unit unit in playerUnits)
+        {
+            for (var i = 0; i < 4; i++)
+            {
+                var neighbor = GetNeighbor(unit.pos, i);
+                if (neighbor == invalidPos)
+                    continue;
+                
+                if (!open.Contains(neighbor))
+                    open.Add(neighbor);
+            }
+        }
+
+        ///GET UNOCCUPIED TILES
+        if (open.Count != 0)
+        {
+            foreach (Vector2Int tile in open)
+            {
+                if (tileManager.GetUnit(tile) == null)
+                {
+                    unoccupiedTiles.Add(tile);
+                }
+            }
+
+            ///GET NEAREST
+            if (unoccupiedTiles.Count != 0)
+            {
+                return GetNearest(unoccupiedTiles);
+            }
+            else
+            ///NO VALID TILES?
+            {
+                while (open.Count > 0)
+                {
+                    List<Vector2Int> tempOpen = open;
+
+                    ///GET ALL ADJACENT TILES AGAIN
+                    foreach (Vector2Int tile in tempOpen)
+                    {
+                        open.Remove(tile);
+                        for (var i = 0; i < 4; i++)
+                        {
+                            var neighbor = GetNeighbor(tile, i);
+
+                            if (tileManager.GetUnit(tile) == null)
+                            {
+                                unoccupiedTiles.Add(tile);
+                                continue;
+                            }
+
+                            if (neighbor == invalidPos)
+                                continue;
+
+                            if (!open.Contains(neighbor) && !closed.Contains(neighbor))
+                                open.Add(neighbor);
+                        }
+                    }
+
+                    ///GET NEAREST
+                    if (unoccupiedTiles.Count != 0)
+                    {
+                        return GetNearest(unoccupiedTiles);
+                    }
+                }
+            }
+
+        }
+
+        //if all else fails
+        return pos;
+    }
+    
+    Vector2Int GetNeighbor(Vector2Int coords, int loop)
+    {
+        int gridSize = GameObject.Find("Managers").GetComponent<GridManager>().gridSize;
+        var invalidPos = new Vector2Int(-1, -1);
+
+        switch (loop)
+        {
+            case 0:
+                if (coords.x + 1 < gridSize && coords.y < gridSize)
+                    return new Vector2Int(coords.x + 1, coords.y);
+                return invalidPos;
+            case 1:
+                if (coords.x < gridSize && coords.y - 1 >= 0)
+                    return new Vector2Int(coords.x, coords.y - 1);
+                return invalidPos;
+            case 2:
+                if (coords.x - 1 >= 0 && coords.y < gridSize)
+                    return new Vector2Int(coords.x - 1, coords.y);
+                return invalidPos;
+            case 3:
+                if (coords.x < gridSize && coords.y + 1 < gridSize)
+                    return new Vector2Int(coords.x, coords.y + 1);
+                return invalidPos;
+            default:
+                return invalidPos;
+        }
+    }
+
+    Vector2Int GetNearest(List<Vector2Int> tiles)
+    {
+        var nearest = pos;
+        float distance = Mathf.Infinity;
+
+        foreach (Vector2Int tile in tiles)
+        {
+            float d = Vector2Int.Distance(pos, tile);
+
+            if (d < distance)
+            {
+                distance = d;
+                nearest = tile;
+            }
+        }
+
+        return nearest;
+    }
+
+    protected Unit GetCombatTarget()
+    {
+        var invalidPos = new Vector2Int(-1, -1);
+
+        for (var i = 0; i < 4; i++)
+        {
+            var neighbor = GetNeighbor(pos, i);
+            if (neighbor == invalidPos)
+                continue;
+            var unit = tileManager.GetUnit(neighbor);
+            if (unit != null)
+            {
+                if (unit.tag == "PlayerUnit")
+                    return unit;
+            }
+        }
+
+        return null;
     }
 } 
